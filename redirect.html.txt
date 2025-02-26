@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download Options</title>
+</head>
+<body>
+    <button id="cloudDownload">Cloud Download (StreamHG)</button>
+    <button id="telegramDownload">Telegram Download</button>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (token) {
+            const telegramButton = document.getElementById('telegramDownload');
+
+            telegramButton.addEventListener('click', function() {
+                window.location.href = `https://t.me/@SHARING_HuB_Bot?start=${token}`;
+            });
+        } else {
+            alert('Invalid token!');
+        }
+    </script>
+</body>
+</html>
