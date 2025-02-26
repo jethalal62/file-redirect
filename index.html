@@ -12,10 +12,15 @@
        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2aXRld2pkb2Rha2lzY292aW56aWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY4NDQ2Njk0NiwiZXhwIjoyMDAwMDQ2OTQ2fQ.FUDDALLC3PYIQLOJENDAS'; // Replace with your Supabase anon key
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Get movie ID from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const movieId = urlParams.get('id');
+       // Get movie ID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get('id');
 
+    // Check if movieId exists
+    if (!movieId) {
+        document.body.innerHTML = "<h1>Error: Missing Movie ID</h1>";
+        return;
+    }
         // Fetch StreamHG link from Supabase
      async function getStreamLink() {
     let { data: files, error } = await supabase
