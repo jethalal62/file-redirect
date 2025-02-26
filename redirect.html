@@ -28,7 +28,7 @@
             try {
                 // 4. Fetch movie data
             const { data: movie, error } = await supabaseClient
-    .from('movies')
+    .from('file')
     .select('streamhg_url')
     .eq('movie_id', movieId)
     .maybeSingle();
