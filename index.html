@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Redirector</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Loading Spinner */
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: #0088cc;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Movie Content */
+        .movie-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .movie-poster {
+                width: 80% !important;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <i class="fas fa-spinner loader" id="loader"></i>
+
+    <!-- Movie Content (Hidden Initially) -->
+    <div class="movie-container" id="content" style="display: none;">
+        <img class="movie-poster" id="poster" style="width: 300px; border-radius: 10px;">
+        <h1 id="title"></h1>
+        <div class="buttons">
+            <a id="telegramBtn" class="btn" target="_blank">
+                <i class="fab fa-telegram"></i> Telegram
+            </a>
+            <a id="downloadBtn" class="btn" target="_blank">
+                <i class="fas fa-download"></i> Download
+            </a>
+            <a id="streamBtn" class="btn" target="_blank">
+                <i class="fas fa-play"></i> Stream
+            </a>
+        </div>
+    </div>
+
+    <!-- Error Container -->
+    <div id="error" style="display: none; text-align: center; padding: 2rem;"></div>
+
+    <script>
+        // ======== SUPABASE CONFIG ======== //
+        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+        // ================================= //
+
+        // Initialize Supabase Client
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Get Movie ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const movieId = urlParams.get('id');
+
+                if (!movieId) throw new Error('Missing movie ID in URL');
+
+                // Fetch Movie Data
+                const { data: movie, error } = await supabase
+                    .from('movies')
+                    .select('*')
+                    .eq('id', movieId)
+                    .single();
+
+                if (error || !movie) throw new Error('Movie not found');
+
+                // Hide Loader, Show Content
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+                // Update Movie Details
+                document.getElementById('title').textContent = movie.title;
+                document.getElementById('poster').src = movie.poster_url;
+                
+                // Set Button URLs
+                document.getElementById('telegramBtn').href = movie.telegram_url;
+                document.getElementById('downloadBtn').href = movie.cloud_download_url;
+                document.getElementById('streamBtn').href = movie.streamhg_url;
+
+            } catch (error) {
+                // Show Error Message
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').innerHTML = `
+                    <h2 style="color: #ff4757;">⚠️ Error: ${error.message}</h2>
+                    <p>Try these solutions:</p>
+                    <ul style="text-align: left; display: inline-block;">
+                        <li>Check URL contains ?id= parameter</li>
+                        <li>Verify movie exists in database</li>
+                        <li>Refresh the page</li>
+                    </ul>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
