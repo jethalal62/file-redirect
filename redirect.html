@@ -3,167 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MovieHub - Watch & Download</title>
-    <!-- Load Supabase FIRST -->
+    <title>MovieHub</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Previous CSS remains the same */
-        .loading-overlay {
+        /* Basic Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a1a; color: white; font-family: Arial, sans-serif; }
+        
+        /* Debug Console (Visible by default) */
+        #debug-console {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-        .spinner {
-            animation: rotate 2s linear infinite;
-            width: 50px;
-            height: 50px;
-        }
-        @keyframes rotate {
-            100% { transform: rotate(360deg); }
+            right: 0;
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-top: 2px solid #00ff00;
+            font-family: monospace;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <div class="loading-overlay" id="loading">
-        <i class="fas fa-spinner spinner" style="color: #fff; font-size: 3rem;"></i>
+    <div id="app">
+        <!-- Content will be injected here -->
     </div>
 
-    <div class="container">
-        <!-- Previous HTML content remains same -->
+    <div id="debug-console">
+        [DEBUG] Initializing application...
     </div>
 
     <script>
-        // 1. Initialize Supabase PROPERLY
-        let supabaseClient;
-        try {
-            const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
-            
-            if (!SUPABASE_URL || !SUPABASE_KEY) {
-                throw new Error('Supabase credentials not configured');
-            }
+        // ======== CONFIGURATION ======== //
+        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+        // =============================== //
 
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } catch (error) {
-            showFatalError(`Configuration Error: ${error.message}`);
+        // Debugging System
+        function debugLog(message) {
+            const console = document.getElementById('debug-console');
+            console.innerHTML += `<br>[DEBUG] ${new Date().toLocaleTimeString()}: ${message}`;
+            console.scrollTop = console.scrollHeight;
         }
 
-        // 2. Core Functionality
+        // Error Handler
+        function showError(message) {
+            debugLog(`ERROR: ${message}`);
+            document.getElementById('app').innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: red;">⚠️ Error</h2>
+                    <p>${message}</p>
+                    <button onclick="location.reload()" style="margin-top: 10px; padding: 10px;">
+                        Reload Page
+                    </button>
+                </div>
+            `;
+        }
+
+        // Main Application
         async function initializeApp() {
             try {
-                // Validate URL parameters
-                const urlParams = new URLSearchParams(window.location.search);
-                const movieId = urlParams.get('id');
-
-                if (!movieId) {
-                    throw new Error('Missing movie ID in URL');
+                // 1. Verify Supabase Connection
+                debugLog('Checking Supabase credentials...');
+                if (!SUPABASE_URL.includes('supabase.co') || !SUPABASE_KEY.startsWith('ey')) {
+                    throw new Error('Invalid Supabase credentials');
                 }
 
-                // Fetch movie data
-                const { data: movie, error } = await supabaseClient
+                // 2. Initialize Supabase Client
+                debugLog('Initializing Supabase client...');
+                window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                
+                // 3. Test Connection
+                debugLog('Testing database connection...');
+                const { error } = await supabase
+                    .from('movies')
+                    .select('*')
+                    .limit(1);
+
+                if (error) throw new Error('Database connection failed');
+
+                // 4. Get Movie ID
+                debugLog('Checking URL parameters...');
+                const urlParams = new URLSearchParams(window.location.search);
+                const movieId = urlParams.get('id') || 'default_movie_id';
+
+                // 5. Load Movie Data
+                debugLog(`Fetching movie data for ID: ${movieId}`);
+                const { data: movie, error: fetchError } = await supabase
                     .from('movies')
                     .select('*')
                     .eq('id', movieId)
                     .single();
 
-                if (error) throw error;
-                if (!movie) throw new Error('Movie not found');
+                if (fetchError) throw new Error('Movie not found');
+                if (!movie) throw new Error('Invalid movie data');
 
-                // Validate movie data structure
-                const requiredFields = [
-                    'title', 'poster_url', 'genre',
-                    'release_year', 'telegram_url',
-                    'cloud_download_url', 'streamhg_url'
-                ];
+                // 6. Render Content
+                debugLog('Rendering content...');
+                document.getElementById('app').innerHTML = `
+                    <div style="max-width: 800px; margin: 20px auto;">
+                        <h1>${movie.title}</h1>
+                        <img src="${movie.poster_url}" style="max-width: 300px; margin: 20px 0;">
+                        <div style="margin: 20px 0;">
+                            <button onclick="window.open('${movie.streamhg_url}', '_blank')" 
+                                    style="padding: 10px 20px; margin: 5px;">
+                                Watch Now
+                            </button>
+                            <button onclick="window.open('${movie.cloud_download_url}', '_blank')" 
+                                    style="padding: 10px 20px; margin: 5px;">
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                `;
 
-                requiredFields.forEach(field => {
-                    if (!movie[field]) {
-                        throw new Error(`Invalid movie data: Missing ${field}`);
-                    }
-                });
-
-                // Update UI
-                document.getElementById('movieTitle').textContent = movie.title;
-                document.getElementById('moviePoster').src = movie.poster_url;
-                document.getElementById('movieGenre').textContent = movie.genre;
-                document.getElementById('movieYear').textContent = movie.release_year;
-
-                // Set button URLs
-                const buttons = {
-                    telegramBtn: movie.telegram_url,
-                    cloudBtn: movie.cloud_download_url,
-                    streamBtn: movie.streamhg_url
-                };
-
-                Object.entries(buttons).forEach(([id, url]) => {
-                    const btn = document.getElementById(id);
-                    if (btn) {
-                        btn.href = url;
-                        btn.target = '_blank';
-                        btn.removeAttribute('disabled');
-                    }
-                });
+                debugLog('Application initialized successfully');
 
             } catch (error) {
-                showError(error);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
+                showError(error.message);
             }
         }
 
-        // 3. Enhanced Error Handling
-        function showError(error) {
-            console.error('Runtime Error:', error);
-            
-            const errorHTML = `
-                <div class="container" style="text-align: center; padding: 2rem;">
-                    <h2 style="color: #ff4757;">⚠️ Error Loading Content</h2>
-                    <p style="margin: 1rem 0;">${error.message}</p>
-                    <div style="margin-top: 2rem;">
-                        <button onclick="location.reload()" 
-                            style="padding: 12px 24px; margin: 0 10px;
-                            background: #1e90ff; color: white; border: none;
-                            border-radius: 25px; cursor: pointer;">
-                            Reload Page
-                        </button>
-                        <a href="/" 
-                            style="padding: 12px 24px; margin: 0 10px;
-                            background: #2ed573; color: white; border: none;
-                            border-radius: 25px; cursor: pointer; text-decoration: none;">
-                            Return Home
-                        </a>
-                    </div>
-                </div>
-            `;
-
-            document.body.innerHTML = errorHTML;
-        }
-
-        function showFatalError(message) {
-            document.body.innerHTML = `
-                <div style="padding: 2rem; text-align: center; color: white;">
-                    <h2 style="color: #ff4757;">🚨 Critical Error</h2>
-                    <p>${message}</p>
-                    <p>Contact support with this error message</p>
-                </div>
-            `;
-        }
-
-        // 4. Start the application
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!supabaseClient) {
-                return showFatalError('Failed to initialize database connection');
-            }
-            initializeApp();
-        });
+        // Start Application
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
