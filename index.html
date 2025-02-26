@@ -1,38 +1,50 @@
-// Get movie ID from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const movieId = urlParams.get('id');
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Redirect</title>
+    <!-- Use versioned CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Redirecting...</h1>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Initialize client with different name
+            const supabaseClient = supabase.createClient(
+                'https://itrvfw........kkvi.supabase.co',
+                'eyJh............................XRld2pkb2Rha2lzY292aW56aWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY4NDQ2Njk0NiwiZXhwIjoyMDAwMDQ2OTQ2fQ.FUDDALLC3PYIQLOJENDAS'
+            );
 
-    // Check if movieId exists
-    if (!movieId) {
-        document.body.innerHTML = "<h1>Error: Missing Movie ID</h1>";
-        return;
-    }
+            // 2. Get movie ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
 
-    console.log("Movie ID:", movieId); // Added log
+            // 3. Check if ID exists
+            if (!movieId) {
+                document.body.innerHTML = "<h1>Error: No Movie ID Provided</h1>";
+                return;
+            }
 
-    // Initialize Supabase client
-    const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co'; // Replace with your Supabase URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your Supabase anon key
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            try {
+                // 4. Fetch movie data
+            const { data: movie, error } = await supabaseClient
+    .from('movies')
+    .select('streamhg_url')
+    .eq('movie_id', movieId)
+    .maybeSingle();
 
-    console.log("Supabase URL:", supabaseUrl); // Added log
-    console.log("Supabase Key:", supabaseKey); // Added log
-    console.log("Supabase Client:", supabase); // Added log
+                if (error) throw error;
+                if (!movies || movies.length === 0) {
+                    throw new Error('Movie not found in database');
+                }
 
-    // Fetch StreamHG link from Supabase
-    async function getStreamLink() {
-        let { data: file, error } = await supabase
-            .from('files')
-            .select('streamhg_url')
-            .eq('movie_id', movieId)
-            .single();
-
-        if (error) {
-            console.error(error);
-            document.body.innerHTML = "<h1>Error: Movie not found.</h1>";
-        } else {
-            window.location.href = file.streamhg_url;
-        }
-    }
-
-    getStreamLink();
+                // 5. Redirect
+                window.location.href = movies[0].streamhg_url;
+            } catch (error) {
+                console.error('Redirect failed:', error);
+                document.body.innerHTML = `<h1>Error: ${error.message}</h1>`;
+            }
+        });
+    </script>
+</body>
+</html>
