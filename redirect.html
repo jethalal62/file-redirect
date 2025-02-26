@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Keep all existing head content the same -->
-
-    <!-- Add loading animation CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieHub - Watch & Download</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Previous CSS remains unchanged */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -21,7 +24,7 @@
             animation: rotate 2s linear infinite;
             width: 50px;
             height: 50px;
-            color: var(--primary);
+            color: #ff4757;
         }
         @keyframes rotate {
             100% { transform: rotate(360deg); }
@@ -29,42 +32,40 @@
     </style>
 </head>
 <body>
-    <!-- Add loading overlay -->
     <div class="loading-overlay" id="loading">
         <i class="fas fa-spinner spinner"></i>
     </div>
 
-    <!-- Keep existing body content -->
+    <div class="container">
+        <!-- Content remains same as original -->
+    </div>
 
     <script>
-        // ======== SUPABASE CONFIGURATION ======== //
-        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co'; // e.g. 'https://xyzabc.supabase.co'
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // e.g. 'eyJhbGci...'
-        // ======================================== //
+        // ======== CONFIGURATION ======== //
+        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+        // =============================== //
+
+        // Initialize Supabase client OUTSIDE of DOMContentLoaded
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Show loading spinner
-            document.getElementById('loading').style.display = 'flex';
-
             try {
-                // 1. Validate Supabase credentials
+                // Validate configuration
                 if (!SUPABASE_URL || !SUPABASE_KEY) {
                     throw new Error('Supabase credentials not configured');
                 }
 
-                // 2. Initialize Supabase properly
-                const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-                // 3. Get movie ID from URL
+                // Get movie ID
                 const urlParams = new URLSearchParams(window.location.search);
                 const movieId = urlParams.get('id');
                 
                 if (!movieId) {
-                    throw new Error('Missing movie ID in URL - Use ?id=YOUR_MOVIE_ID');
+                    throw new Error('Missing movie ID in URL parameters - Use ?id=MOVIE_ID');
                 }
 
-                // 4. Fetch movie data
-                const { data: movie, error } = await supabase
+                // Fetch movie data
+                const { data: movie, error } = await supabaseClient
                     .from('movies')
                     .select('*')
                     .eq('id', movieId)
@@ -73,47 +74,50 @@
                 if (error) throw error;
                 if (!movie) throw new Error('Movie not found in database');
 
-                // 5. Update UI elements
+                // Update UI
                 document.getElementById('movieTitle').textContent = movie.title;
                 document.getElementById('movieGenre').textContent = movie.genre;
                 document.getElementById('movieYear').textContent = movie.release_year;
                 document.getElementById('moviePoster').src = movie.poster_url;
 
-                // 6. Set button URLs with validation
-                const setButtonUrl = (buttonId, url) => {
-                    const btn = document.getElementById(buttonId);
+                // Set button URLs with validation
+                const setButton = (id, url) => {
+                    const btn = document.getElementById(id);
                     if (btn && url) {
                         btn.href = url;
                         btn.target = '_blank';
-                        btn.onclick = null; // Remove any previous click handlers
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.opacity = '1';
                     }
                 };
 
-                setButtonUrl('telegramBtn', movie.telegram_url);
-                setButtonUrl('cloudBtn', movie.cloud_download_url);
-                setButtonUrl('streamBtn', movie.streamhg_url);
+                setButton('telegramBtn', movie.telegram_url);
+                setButton('cloudBtn', movie.cloud_download_url);
+                setButton('streamBtn', movie.streamhg_url);
 
             } catch (error) {
-                // Show error message without removing existing content
-                const errorDiv = document.createElement('div');
-                errorDiv.innerHTML = `
+                const errorHTML = `
                     <div class="container" style="text-align: center; padding: 2rem;">
-                        <h2 style="color: var(--primary); margin-bottom: 1rem;">⚠️ Error</h2>
-                        <p style="margin-bottom: 1rem;">${error.message}</p>
-                        <button onclick="location.reload()" 
-                                style="padding: 12px 24px; 
-                                background: var(--accent); 
-                                color: white; 
-                                border: none;
-                                border-radius: 25px;
-                                cursor: pointer;">
-                            Try Again
-                        </button>
+                        <h2 style="color: #ff4757;">⚠️ ${error.message}</h2>
+                        <p style="margin: 1rem 0;">Check the URL and try again</p>
+                        <div style="margin-top: 2rem;">
+                            <button onclick="location.reload()" 
+                                style="padding: 12px 24px; margin: 0 10px;
+                                background: #1e90ff; color: white; border: none;
+                                border-radius: 25px; cursor: pointer;">
+                                Reload
+                            </button>
+                            <a href="/" 
+                                style="padding: 12px 24px; margin: 0 10px;
+                                background: #2ed573; color: white; border: none;
+                                border-radius: 25px; cursor: pointer; text-decoration: none;">
+                                Home
+                            </a>
+                        </div>
                     </div>
                 `;
-                document.body.prepend(errorDiv);
+                document.body.innerHTML = errorHTML;
             } finally {
-                // Hide loading spinner
                 document.getElementById('loading').style.display = 'none';
             }
         });
