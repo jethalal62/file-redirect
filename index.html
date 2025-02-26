@@ -2,37 +2,38 @@
 <html>
 <head>
     <title>Movie Redirect</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- Fixed CDN with version -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <h1>Redirecting...</h1>
     <script>
-        // Initialize Supabase client
-        const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co'; // Replace with your Supabase URL
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your Supabase anon key
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // Initialize AFTER library loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Use distinct variable name
+            const supabaseClient = supabase.createClient(
+                'https://itrvfwwxjoedvrmhkkvi.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'
+            );
 
-        // Get movie ID from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const movieId = urlParams.get('id');
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
 
-        // Fetch StreamHG link from Supabase
-        async function getStreamLink() {
-            let { data: movies, error } = await supabase
-                .from('movies')
-                .select('streamhg_url')
-                .eq('movie_id', movieId);
+            try {
+                const { data: movies, error } = await supabaseClient
+                    .from('movies')
+                    .select('streamhg_url')
+                    .eq('movie_id', movieId);
 
-            if (error) {
-                console.error(error);
-                document.body.innerHTML = "<h1>Error: Movie not found.</h1>";
-            } else {
-                // Redirect user to StreamHG link
+                if (error) throw error;
+                if (movies.length === 0) throw new Error('No movie found');
+                
                 window.location.href = movies[0].streamhg_url;
+            } catch (error) {
+                console.error(error);
+                document.body.innerHTML = `<h1>Error: ${error.message}</h1>`;
             }
-        }
-
-        getStreamLink();
+        });
     </script>
 </body>
 </html>
