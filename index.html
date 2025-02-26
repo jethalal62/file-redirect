@@ -3,84 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Redirector</title>
+    <title>MovieHub - Watch & Download</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Loading Spinner */
+        :root {
+            --primary: #ff4757;
+            --secondary: #2ed573;
+            --accent: #1e90ff;
+            --dark: #2f3542;
+            --light: #ffffff;
+        }
+
         .loader {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 3rem;
-            color: #0088cc;
+            color: var(--primary);
             animation: spin 1s linear infinite;
         }
-        
-        /* Movie Content */
-        .movie-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 20px;
+
+        #error-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff475720;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            display: none;
+            max-width: 90%;
             text-align: center;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .movie-poster {
-                width: 80% !important;
-            }
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Spinner -->
-    <i class="fas fa-spinner loader" id="loader"></i>
-
-    <!-- Movie Content (Hidden Initially) -->
-    <div class="movie-container" id="content" style="display: none;">
-        <img class="movie-poster" id="poster" style="width: 300px; border-radius: 10px;">
-        <h1 id="title"></h1>
-        <div class="buttons">
-            <a id="telegramBtn" class="btn" target="_blank">
-                <i class="fab fa-telegram"></i> Telegram
-            </a>
-            <a id="downloadBtn" class="btn" target="_blank">
-                <i class="fas fa-download"></i> Download
-            </a>
-            <a id="streamBtn" class="btn" target="_blank">
-                <i class="fas fa-play"></i> Stream
-            </a>
-        </div>
+    <div id="error-box"></div>
+    <div class="loader" id="loader"></div>
+    
+    <div class="container" style="display: none;" id="content">
+        <!-- Your original content here -->
     </div>
 
-    <!-- Error Container -->
-    <div id="error" style="display: none; text-align: center; padding: 2rem;"></div>
-
     <script>
-        // ======== SUPABASE CONFIG ======== //
+        // ======== CONFIGURATION ======== //
         const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
-        // ================================= //
+        // =============================== //
 
-        // Initialize Supabase Client
+        // Initialize Supabase FIRST
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function showError(message) {
+            document.getElementById('loader').style.display = 'none';
+            const errorBox = document.getElementById('error-box');
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = `
+                <h3>⚠️ Error</h3>
+                <p>${message}</p>
+                <button onclick="location.reload()" 
+                    style="margin-top: 10px; padding: 8px 16px;
+                    background: var(--primary); color: white; 
+                    border: none; border-radius: 5px;">
+                    Reload
+                </button>
+            `;
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // Get Movie ID from URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const movieId = urlParams.get('id');
 
-                if (!movieId) throw new Error('Missing movie ID in URL');
+                // Validate ID
+                if (!movieId) throw new Error('Add ?id=MOVIE_ID to URL');
 
-                // Fetch Movie Data
+                // Fetch data
                 const { data: movie, error } = await supabase
                     .from('movies')
                     .select('*')
@@ -88,33 +94,31 @@
                     .single();
 
                 if (error || !movie) throw new Error('Movie not found');
+                
+                // Validate URLs
+                const requiredUrls = [
+                    movie.telegram_url,
+                    movie.cloud_download_url,
+                    movie.streamhg_url
+                ];
+                
+                if (requiredUrls.some(url => !url.startsWith('http'))) {
+                    throw new Error('Invalid URLs in database');
+                }
 
-                // Hide Loader, Show Content
+                // Show content
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
-
-                // Update Movie Details
-                document.getElementById('title').textContent = movie.title;
-                document.getElementById('poster').src = movie.poster_url;
                 
-                // Set Button URLs
-                document.getElementById('telegramBtn').href = movie.telegram_url;
-                document.getElementById('downloadBtn').href = movie.cloud_download_url;
-                document.getElementById('streamBtn').href = movie.streamhg_url;
+                // Update elements
+                document.getElementById('movieTitle').textContent = movie.title;
+                document.getElementById('moviePoster').src = movie.poster_url;
+                document.getElementById('telegramBtn').href = `redirect.html?id=${movieId}&action=telegram`;
+                document.getElementById('cloudBtn').href = `redirect.html?id=${movieId}&action=download`;
+                document.getElementById('streamBtn').href = `redirect.html?id=${movieId}&action=stream`;
 
             } catch (error) {
-                // Show Error Message
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('error').style.display = 'block';
-                document.getElementById('error').innerHTML = `
-                    <h2 style="color: #ff4757;">⚠️ Error: ${error.message}</h2>
-                    <p>Try these solutions:</p>
-                    <ul style="text-align: left; display: inline-block;">
-                        <li>Check URL contains ?id= parameter</li>
-                        <li>Verify movie exists in database</li>
-                        <li>Refresh the page</li>
-                    </ul>
-                `;
+                showError(error.message);
             }
         });
     </script>
