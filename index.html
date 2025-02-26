@@ -1,18 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Movie Redirect</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-</head>
-<body>
-    <h1>Redirecting...</h1>
-    <script>
-        // Initialize Supabase client
-        const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co'; // Replace with your Supabase URL
-       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2aXRld2pkb2Rha2lzY292aW56aWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY4NDQ2Njk0NiwiZXhwIjoyMDAwMDQ2OTQ2fQ.FUDDALLC3PYIQLOJENDAS'; // Replace with your Supabase anon key
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-       // Get movie ID from URL parameters
+// Get movie ID from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const movieId = urlParams.get('id');
 
@@ -21,23 +7,32 @@
         document.body.innerHTML = "<h1>Error: Missing Movie ID</h1>";
         return;
     }
-        // Fetch StreamHG link from Supabase
-     async function getStreamLink() {
-   let { data: file, error } = await supabase
-    .from('files')
-    .select('streamhg_url')
-    .eq('movie_id', movieId)
-    .single();
 
-    if (error) {
-        console.error(error);
-        document.body.innerHTML = "<h1>Error: Movie not found.</h1>";
-    } else {
-        window.location.href = files[0].streamhg_url;
+    console.log("Movie ID:", movieId); // Added log
+
+    // Initialize Supabase client
+    const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co'; // Replace with your Supabase URL
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your Supabase anon key
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    console.log("Supabase URL:", supabaseUrl); // Added log
+    console.log("Supabase Key:", supabaseKey); // Added log
+    console.log("Supabase Client:", supabase); // Added log
+
+    // Fetch StreamHG link from Supabase
+    async function getStreamLink() {
+        let { data: file, error } = await supabase
+            .from('files')
+            .select('streamhg_url')
+            .eq('movie_id', movieId)
+            .single();
+
+        if (error) {
+            console.error(error);
+            document.body.innerHTML = "<h1>Error: Movie not found.</h1>";
+        } else {
+            window.location.href = file.streamhg_url;
+        }
     }
-}
 
-        getStreamLink();
-    </script>
-</body>
-</html>
+    getStreamLink();
