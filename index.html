@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Redirect</title>
+</head>
+<body>
+    <h1>Redirecting...</h1>
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'YOUR_SUPABASE_URL';
+        const supabaseKey = 'YOUR_SUPABASE_KEY';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Get movie ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const movieId = urlParams.get('id');
+
+        // Fetch StreamHG link from Supabase
+        async function getStreamLink() {
+            let { data: movies, error } = await supabase
+                .from('movies')
+                .select('stream_link')
+                .eq('id', movieId);
+
+            if (error) {
+                console.error(error);
+                document.body.innerHTML = "<h1>Error: Movie not found.</h1>";
+            } else {
+                // Redirect user to StreamHG link
+                window.location.href = movies[0].stream_link;
+            }
+        }
+
+        getStreamLink();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</body>
+</html>
