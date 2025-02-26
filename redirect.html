@@ -1,120 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <!-- Enhanced Mobile Meta Tags -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="HandheldFriendly" content="true">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>MovieHub - Watch & Download</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css>
-    <style>
-        /* Added Mobile-First CSS */
-        .btn {
-            min-height: 50px; /* Minimum touch target size */
-            padding: 1rem 2rem;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+<script>
+    // 1. Initialize Supabase FIRST
+    const SUPABASE_URL = 'https://your-project.supabase.co';
+    const SUPABASE_KEY = 'your-anon-key';
+    const supabaseClient = supabase.createClient(https://itrvfwwxjoedvrmhkkvi.supabase.co,eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            // 2. Use the pre-initialized client
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
+
+            const { data: movie, error } = await supabaseClient
+                .from('movies')
+                .select('*')
+                .eq('id', movieId)
+                .single();
+
+            // 3. Update buttons using the movie data
+            if (movie) {
+                document.getElementById('telegramBtn').href = movie.telegram_url;
+                document.getElementById('cloudBtn').href = movie.cloud_download_url;
+                document.getElementById('streamBtn').href = movie.streamhg_url;
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            // Add your error handling here
         }
-
-        @media (max-width: 480px) {
-            .options-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            
-            .movie-poster {
-                width: 200px;
-            }
-            
-            .btn {
-                padding: 1.2rem 1rem; /* Larger touch area */
-                font-size: 1.1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Previous HTML content remains same -->
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Mobile Detection
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            // Initialize Supabase
-            const supabase = supabase.createClient(
-                'https://itrvfwwxjoedvrmhkkvi.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'
-            );
-
-            // Mobile-Friendly Click Handler
-            const handleAction = (url) => {
-                if (!url) return;
-                if (isMobile && (url.startsWith('http') || url.startsWith('https'))) {
-                    window.location.href = url;
-                } else {
-                    window.open(url, '_blank');
-                }
-            };
-
-            // Set button handlers immediately
-            const setButtonActions = () => {
-                document.getElementById('telegramBtn').onclick = (e) => {
-                    e.preventDefault();
-                    handleAction(movieData?.telegram_url);
-                };
-                document.getElementById('cloudBtn').onclick = (e) => {
-                    e.preventDefault();
-                    handleAction(movieData?.cloud_download_url);
-                };
-                document.getElementById('streamBtn').onclick = (e) => {
-                    e.preventDefault();
-                    handleAction(movieData?.streamhg_url);
-                };
-            };
-
-            // Initial call to set button handlers
-            setButtonActions();
-
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const movieId = urlParams.get('id');
-
-                const { data: movie, error } = await supabase
-                    .from('movies')
-                    .select('*')
-                    .eq('id', movieId)
-                    .single();
-
-                if (error) throw error;
-
-                // Update UI and re-bind buttons
-                movieData = movie;
-                setButtonActions();
-
-                // Mobile-specific redirect handling
-                if (isMobile) {
-                    document.querySelectorAll('a').forEach(a => {
-                        a.setAttribute('rel', 'noopener');
-                    });
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-                document.body.innerHTML = `
-                    <div class="container" style="text-align: center; padding: 2rem;">
-                        <h2 style="color: var(--primary); margin-bottom: 1rem;">⚠️ Error Loading Content</h2>
-                        <p>Please check your internet connection and try again.</p>
-                        <button onclick="window.location.reload()" 
-                                style="margin-top: 1rem; padding: 0.8rem 1.5rem; background: var(--accent); border: none; border-radius: 5px; color: white;">
-                            Reload Page
-                        </button>
-                    </div>
-                `;
-            }
-        });
-    </script>
-</body>
-</html>
+    });
+</script>
