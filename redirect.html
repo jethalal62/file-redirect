@@ -1,48 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Movie Redirect</title>
-    <!-- Use versioned CDN -->
+    <title>Redirecting...</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <h1>Redirecting...</h1>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Initialize client with different name
+            // Initialize Supabase
             const supabaseClient = supabase.createClient(
-                'https://itrvfwwxjoedvrmhkkvi.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'
+                'https://itrvfwwxjoedvrmhkkvi.supabase.co',  // Replace with your URL
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'   // Replace with your anon key
             );
 
-            // 2. Get movie ID
+            // Get movie ID from URL
             const urlParams = new URLSearchParams(window.location.search);
             const movieId = urlParams.get('id');
 
-            // 3. Check if ID exists
             if (!movieId) {
                 document.body.innerHTML = "<h1>Error: No Movie ID Provided</h1>";
                 return;
             }
 
             try {
-                // 4. Fetch movie data
-            const { data: movie, error } = await supabaseClient
-    .from('files')
-    .select('streamhg_url')
-    .eq('movie_id', movieId)
-    .maybeSingle();
+                // Query Supabase
+                const { data: movies, error } = await supabaseClient
+                    .from('movies')
+                    .select('streamhg_url')
+                    .eq('id', movieId);
 
-                if (error) throw error;
-                if (!movies || movies.length === 0) {
-                    throw new Error('Movie not found in database');
+                if (error || !movies || movies.length === 0) {
+                    document.body.innerHTML = "<h1>Error: Movie Not Found</h1>";
+                } else {
+                    window.location.href = movies[0].streamhg_url;
                 }
-
-                // 5. Redirect
-                window.location.href = movies[0].streamhg_url;
             } catch (error) {
-                console.error('Redirect failed:', error);
-                document.body.innerHTML = `<h1>Error: ${error.message}</h1>`;
+                console.error("Error:", error);
+                document.body.innerHTML = "<h1>Error: Failed to Redirect</h1>";
             }
         });
     </script>
