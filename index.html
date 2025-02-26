@@ -17,20 +17,19 @@
         const movieId = urlParams.get('id');
 
         // Fetch StreamHG link from Supabase
-        async function getStreamLink() {
-          let { data: files, error } = await supabase
-    .from('files')
-    .select('streamhg_url')
-    .eq('movie_id', movieId);
+     async function getStreamLink() {
+    let { data: files, error } = await supabase
+        .from('files')
+        .select('streamhg_url')
+        .eq('movie_id', movieId);
 
-            if (error) {
-                console.error(error);
-                document.body.innerHTML = "<h1>Error: Movie not found.</h1>";
-            } else {
-                // Redirect user to StreamHG link
-                window.location.href = movies[0].streamhg_url;
-            }
-        }
+    if (error) {
+        console.error(error);
+        document.body.innerHTML = "<h1>Error: Movie not found.</h1>";
+    } else {
+        window.location.href = files[0].streamhg_url;
+    }
+}
 
         getStreamLink();
     </script>
