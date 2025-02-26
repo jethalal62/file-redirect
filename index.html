@@ -19,8 +19,8 @@
         async function getStreamLink() {
             let { data: movies, error } = await supabase
                 .from('movies')
-                .select('stream_link')
-                .eq('id', movieId);
+                .select('streamhg_url')
+                .eq('movie_id', movieId);
 
             if (error) {
                 console.error(error);
