@@ -18,10 +18,10 @@
 
         // Fetch StreamHG link from Supabase
         async function getStreamLink() {
-            let { data: movies, error } = await supabase
-                .from('movies')
-                .select('streamhg_url')
-                .eq('movie_id', movieId);
+          let { data: files, error } = await supabase
+    .from('files')
+    .select('streamhg_url')
+    .eq('movie_id', movieId);
 
             if (error) {
                 console.error(error);
