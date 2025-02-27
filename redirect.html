@@ -6,45 +6,76 @@
     <title>Redirecting...</title>
     <style>
         body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
             font-family: Arial, sans-serif;
-            text-align: center;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message {
+            color: red;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <h1>Redirecting...</h1>
     <div class="loader" id="loader"></div>
-    <div id="errorBox" style="display: none;"></div>
-    
+    <div class="error-message" id="errorBox" style="display: none;"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const choice = urlParams.get('choice');
-        
-        switch (choice) {
-            case 'telegram':
-                window.location.href = 'https://example.com/telegram-download';
-                break;
-            case 'cloud':
-                window.location.href = 'https://example.com/cloud-download';
-                break;
-            case 'streaming':
-                window.location.href = 'https://example.com/instant-streaming';
-                break;
-            default:
-                showError('Invalid choice');
-        }
-        
-        function showError(message) {
-            const errorBox = document.getElementById('errorBox');
-            errorBox.innerText = message;
-            errorBox.style.display = 'block';
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+
+            // Initialize Supabase client
+            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            async function redirectUser() {
+                try {
+                    // Fetch data from Supabase or perform any async operation
+                    let { data, error } = await supabase
+                        .from('your-table')
+                        .select('*')
+                        .eq('some-column', 'some-value');
+
+                    if (error) throw error;
+
+                    // Assuming you have a URL in the data
+                    if (data && data.length > 0) {
+                        const url = data[0].url; // Adjust this based on your data structure
+                        window.location.href = url;
+                    } else {
+                        throw new Error('No data found');
+                    }
+                } catch (error) {
+                    showError(error.message);
+                }
+            }
+
+            function showError(message) {
+                const errorBox = document.getElementById('errorBox');
+                errorBox.textContent = message;
+                errorBox.style.display = 'block';
+            }
+
+            // Start the redirection process
+            redirectUser();
+        });
     </script>
 </body>
 </html>
