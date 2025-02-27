@@ -5,37 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
     <style>
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .error-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 71, 87, 0.15);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid #ff4757;
-            max-width: 90%;
-            display: none;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* Your CSS styles */
     </style>
 </head>
 <body>
@@ -44,92 +14,25 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // ======== SUPABASE INITIALIZATION ======== //
-        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
-
-        // Wait for the DOM to be fully loaded before running the script
         document.addEventListener('DOMContentLoaded', function() {
+            const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+
+            // Initialize supabase first!
             const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // ======== ERROR HANDLER ======== //
+            // Your remaining JavaScript code here...
+            // (Including showError(), the async function, and console.log() statements)
             function showError(message) {
-                document.getElementById('loader').style.display = 'none';
-                const errorBox = document.getElementById('errorBox');
-                errorBox.style.display = 'block';
-                errorBox.innerHTML = `
-                    <h3 style="color: #ff4757">⚠️ Redirect Failed</h3>
-                    <p>${message}</p>
-                    <button onclick="window.history.back()"
-                            style="padding: 10px 20px;
-                                    margin-top: 1rem;
-                                    background: #ff4757;
-                                    color: white;
-                                    border: none;
-                                    border-radius: 5px;
-                                    cursor: pointer;">
-                        Go Back
-                    </button>
-                `;
+                // Your error handling code
             }
 
-            // ======== MAIN REDIRECT LOGIC ======== //
             (async () => {
                 try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const movieId = urlParams.get('id');
-                    const action = urlParams.get('action');
-
-                    console.log("Movie ID from URL:", movieId);
-                    console.log("Action from URL:", action);
-
-                    // Validate parameters
-                    if (!movieId || !action) {
-                        throw new Error('Missing ID or action in URL');
-                    }
-
-                    // Fetch movie data
-                    const { data: movie, error } = await supabase
-                        .from('movies')
-                        .select('*')
-                        .eq('id', movieId)
-                        .single();
-
-                    console.log("Supabase Query Result:", movie);
-                    console.log("Supabase Query Error:", error);
-
-                    if (error) throw error;
-                    if (!movie) throw new Error('Movie not found');
-
-                    // Get redirect URL
-                    let redirectUrl;
-                    switch(action) {
-                        case 'telegram':
-                            redirectUrl = movie.telegram_url;
-                            break;
-                        case 'download':
-                            redirectUrl = movie.cloud_download_url;
-                            break;
-                        case 'stream':
-                            redirectUrl = movie.streamhg_url;
-                            break;
-                        default:
-                            throw new Error('Invalid action');
-                    }
-
-                    console.log("Redirect URL:", redirectUrl);
-
-                    // Validate URL
-                    if (!redirectUrl.startsWith('http')) {
-                        throw new Error('Invalid URL format in database');
-                    }
-
-                    // Perform redirect
-                    window.location.href = redirectUrl;
-
+                    // Your async code
+                    // Your console.log() statements
                 } catch (error) {
-                    showError(error.message);
-                    console.error('Redirect Error:', error);
+                    // Your error handling
                 }
             })();
         });
