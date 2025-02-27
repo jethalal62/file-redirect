@@ -4,78 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
         .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 2s linear infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .error-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 71, 87, 0.15);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #ff4757;
+            display: none;
+            max-width: 90%;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .error-message {
-            color: red;
-            font-size: 18px;
-        }
     </style>
 </head>
 <body>
     <div class="loader" id="loader"></div>
-    <div class="error-message" id="errorBox" style="display: none;"></div>
+    <div class="error-box" id="errorBox"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+        // ======== INITIALIZE SUPABASE FIRST ======== //
+        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // Initialize Supabase client
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ======== ERROR HANDLER ======== //
+        function showError(message) {
+            document.getElementById('loader').style.display = 'none';
+            const errorBox = document.getElementById('errorBox');
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = `
+                <h3 style="color: #ff4757">⚠️ Redirect Failed</h3>
+                <p>${message}</p>
+                <div style="margin-top: 1rem;">
+                    <button onclick="window.history.back()" 
+                            style="padding: 10px 20px;
+                            background: #ff4757;
+                            color: white;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;">
+                        Go Back
+                    </button>
+                    <button onclick="location.reload()" 
+                            style="margin-left: 1rem;
+                            padding: 10px 20px;
+                            background: #1e90ff;
+                            color: white;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
 
-            async function redirectUser() {
-                try {
-                    // Fetch data from Supabase or perform any async operation
-                    let { data, error } = await supabase
-                        .from('your-table')
-                        .select('*')
-                        .eq('some-column', 'some-value');
+        // ======== MAIN REDIRECT LOGIC ======== //
+        (async () => {
+            try {
+                // 1. Get URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const movieId = urlParams.get('id');
+                const action = urlParams.get('action');
 
-                    if (error) throw error;
-
-                    // Assuming you have a URL in the data
-                    if (data && data.length > 0) {
-                        const url = data[0].url; // Adjust this based on your data structure
-                        window.location.href = url;
-                    } else {
-                        throw new Error('No data found');
-                    }
-                } catch (error) {
-                    showError(error.message);
+                // 2. Validate parameters
+                if (!movieId || !action) {
+                    throw new Error('Missing movie ID or action in URL');
                 }
-            }
 
-            function showError(message) {
-                const errorBox = document.getElementById('errorBox');
-                errorBox.textContent = message;
-                errorBox.style.display = 'block';
-            }
+                // 3. Fetch movie data
+                const { data: movie, error } = await supabase
+                    .from('movies')
+                    .select('*')
+                    .eq('id', movieId)
+                    .single();
 
-            // Start the redirection process
-            redirectUser();
-        });
+                // 4. Handle errors
+                if (error) throw error;
+                if (!movie) throw new Error('Movie not found in database');
+
+                // 5. Validate URLs
+                const validActions = {
+                    telegram: movie.telegram_url,
+                    download: movie.cloud_download_url,
+                    stream: movie.streamhg_url
+                };
+
+                if (!validActions[action]) {
+                    throw new Error('Invalid action type');
+                }
+
+                if (!validActions[action].startsWith('http')) {
+                    throw new Error(`Invalid ${action} URL format`);
+                }
+
+                // 6. Perform redirect
+                window.location.href = validActions[action];
+
+            } catch (error) {
+                showError(error.message);
+                console.error('Redirect Error:', error);
+            }
+        })();
     </script>
 </body>
 </html>
