@@ -3,53 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MovieHub - Fixed Version</title>
+    <title>MovieHub - Watch & Download</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Loading overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        :root {
+            --primary: #ff4757;
+            --secondary: #2ed573;
+            --accent: #1e90ff;
+            --dark: #2f3542;
+            --light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2f3542, #1e272e);
+            color: var(--light);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .movie-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease;
+        }
+
+        .movie-poster {
+            width: 280px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 1.5rem;
+            border: 3px solid var(--primary);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .option-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
             width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
+            justify-content: center;
+        }
+
+        .telegram-btn {
+            background: #0088cc;
+            color: white;
+        }
+
+        .cloud-btn {
+            background: var(--secondary);
+            color: var(--dark);
+        }
+
+        .stream-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .movie-info {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .movie-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .movie-meta {
             display: flex;
             justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        
-        .spinner {
-            animation: rotate 2s linear infinite;
-            color: #ff4757;
-            font-size: 3rem;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
         }
 
-        @keyframes rotate {
-            100% { transform: rotate(360deg); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Error message styling */
-        .error-message {
-            color: #ff4757;
-            padding: 1rem;
-            border: 2px solid #ff4757;
-            border-radius: 5px;
-            margin: 2rem;
-            display: none;
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .movie-title {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="loading-overlay" id="loading">
-        <i class="fas fa-spinner spinner"></i>
-    </div>
-
     <div class="container">
         <div class="movie-header">
-            <img src="https://via.placeholder.com/300x450?text=Loading+Poster" 
+            <img src="https://via.placeholder.com/300x450?text=Movie+Poster" 
+                 alt="Movie Poster" 
                  class="movie-poster" 
                  id="moviePoster">
             
@@ -63,91 +157,78 @@
         </div>
 
         <div class="options-grid">
+            <!-- Telegram Download Card -->
             <div class="option-card">
                 <i class="fab fa-telegram-plane option-icon"></i>
                 <h3>Telegram Download</h3>
-                <a class="btn telegram-btn" id="telegramBtn" target="_blank">
+                <p>Get instant access via Telegram bot</p>
+                <a href="#" class="btn telegram-btn" id="telegramBtn">
                     <i class="fab fa-telegram-plane"></i>
                     Get via Telegram
                 </a>
             </div>
 
+            <!-- Cloud Download Card -->
             <div class="option-card">
                 <i class="fas fa-cloud-download-alt option-icon"></i>
                 <h3>Direct Download</h3>
-                <a class="btn cloud-btn" id="cloudBtn" target="_blank">
+                <p>High-speed cloud download</p>
+                <a href="#" class="btn cloud-btn" id="cloudBtn">
                     <i class="fas fa-download"></i>
                     Download Now
                 </a>
             </div>
 
+            <!-- Streaming Card -->
             <div class="option-card">
                 <i class="fas fa-play-circle option-icon"></i>
                 <h3>Instant Streaming</h3>
-                <a class="btn stream-btn" id="streamBtn" target="_blank">
+                <p>Watch now in HD quality</p>
+                <a href="#" class="btn stream-btn" id="streamBtn">
                     <i class="fas fa-play"></i>
                     Watch Now
                 </a>
             </div>
         </div>
-
-        <div class="error-message" id="errorContainer"></div>
     </div>
 
     <script>
-        // ======== SUPABASE CONFIGURATION ======== //
-        const SUPABASE_URL = 'https://oroekqfmpofvmchjwidy.supabase.co'; // Replace with your URL
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yb2VrcWZtcG9mdm1jaGp3aWR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzEyNTgsImV4cCI6MjA1NjE0NzI1OH0.ModeDQiBayq9sUQSGVy33tydUXDgbyYxKN3A9En0tmE'; // Replace with your key
-        // ======================================== //
-
-        // Initialize Supabase client FIRST
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // Error handling function
-        function showError(message) {
-            document.getElementById('loading').style.display = 'none';
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.style.display = 'block';
-            errorContainer.innerHTML = `
-                <h3>⚠️ Error</h3>
-                <p>${message}</p>
-                <button onclick="location.reload()" 
-                        style="margin-top: 1rem; padding: 0.8rem 1.5rem;
-                        background: #ff4757; color: white; border: none;
-                        border-radius: 5px; cursor: pointer;">
-                    Try Again
-                </button>
-            `;
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Supabase
+            const supabase = supabase.createClient(
+                'https://oroekqfmpofvmchjwidy.supabase.co',  // Replace with your URL
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yb2VrcWZtcG9mdm1jaGp3aWR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzEyNTgsImV4cCI6MjA1NjE0NzI1OH0.ModeDQiBayq9sUQSGVy33tydUXDgbyYxKN3A9En0tmE',  // Replace with your anon key
+                {
+                    global: {
+                        headers: {
+                            apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s',  // Required for RLS
+                            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s`
+                        }
+                    }
+                }
+            );
+
+            // Get movie ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
+
             try {
-                // Get movie ID from URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const movieId = urlParams.get('id');
-
-                if (!movieId) throw new Error('Missing movie ID in URL');
-
-                // Fetch movie data using maybeSingle() for better error handling
+                // Fetch movie data
                 const { data: movie, error } = await supabase
                     .from('movies')
-                    .select('*')
+                    .select(`
+                        title,
+                        genre,
+                        release_year,
+                        poster_url,
+                        streamhg_url,
+                        telegram_url,
+                        cloud_download_url
+                    `)
                     .eq('id', movieId)
-                    .maybeSingle();
+                    .single();
 
-                if (error) throw error;
-                if (!movie) throw new Error('Movie not found in database');
-
-                // Validate URLs
-                const requiredUrls = [
-                    movie.telegram_url,
-                    movie.cloud_download_url,
-                    movie.streamhg_url
-                ];
-
-                if (requiredUrls.some(url => !url?.startsWith('http'))) {
-                    throw new Error('Invalid URL format in database');
-                }
+                if (error || !movie) throw error;
 
                 // Update UI
                 document.getElementById('movieTitle').textContent = movie.title;
@@ -155,16 +236,21 @@
                 document.getElementById('movieYear').textContent = movie.release_year;
                 document.getElementById('moviePoster').src = movie.poster_url;
 
-                // Set button URLs
+                // Set button actions
                 document.getElementById('telegramBtn').href = movie.telegram_url;
                 document.getElementById('cloudBtn').href = movie.cloud_download_url;
                 document.getElementById('streamBtn').href = movie.streamhg_url;
 
-                // Hide loading spinner
-                document.getElementById('loading').style.display = 'none';
-
             } catch (error) {
-                showError(error.message);
+                document.body.innerHTML = `
+                    <div class="container" style="text-align: center; padding: 5rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1rem;">⚠️ Movie Not Found</h2>
+                        <p style="margin-bottom: 2rem;">The requested movie could not be found. Please check the URL.</p>
+                        <a href="/" style="color: var(--accent); text-decoration: underline;">
+                            Return to Homepage
+                        </a>
+                    </div>
+                `;
                 console.error('Error:', error);
             }
         });
