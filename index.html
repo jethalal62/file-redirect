@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Your File Now!</title>
+    <title>Download Portal</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f0f0f0;
+            background-image: linear-gradient(to bottom, #f0f0f0, #ccc);
         }
         
         .container {
@@ -18,6 +19,14 @@
             padding: 20px;
             border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            border-radius: 50%;
         }
         
         .header {
@@ -53,11 +62,12 @@
 </head>
 <body>
     <div class="container">
+        <img src="logo.png" alt="Logo" class="logo">
         <div class="header">Choose Your Download Option</div>
         <div class="buttons">
-            <button class="button" data-choice="telegram">Telegram Download</button>
-            <button class="button" data-choice="cloud">Cloud Download</button>
-            <button class="button" data-choice="streaming">Instant Streaming</button>
+            <button class="button" id="telegram-btn" data-choice="telegram">Telegram Download</button>
+            <button class="button" id="cloud-btn" data-choice="cloud">Cloud Download</button>
+            <button class="button" id="streaming-btn" data-choice="streaming">Instant Streaming</button>
         </div>
         <div id="errorBox" style="display: none;"></div>
     </div>
@@ -72,7 +82,8 @@
         const buttons = document.querySelectorAll('.button');
         
         buttons.forEach(button => {
-            button.addEventListener('click', async () => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
                 try {
                     const choice = button.dataset.choice;
                     const url = `redirect.html?choice=${choice}`;
