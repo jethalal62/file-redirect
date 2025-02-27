@@ -43,92 +43,96 @@
     <div class="error-message" id="errorBox"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script defer>
+    <script>
         // ======== SUPABASE INITIALIZATION ======== //
         const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ======== ERROR HANDLER ======== //
-        function showError(message) {
-            document.getElementById('loader').style.display = 'none';
-            const errorBox = document.getElementById('errorBox');
-            errorBox.style.display = 'block';
-            errorBox.innerHTML = `
-                <h3 style="color: #ff4757">⚠️ Redirect Failed</h3>
-                <p>${message}</p>
-                <button onclick="window.history.back()"
-                        style="padding: 10px 20px;
-                                margin-top: 1rem;
-                                background: #ff4757;
-                                color: white;
-                                border: none;
-                                border-radius: 5px;
-                                cursor: pointer;">
-                    Go Back
-                </button>
-            `;
-        }
+        // Wait for the DOM to be fully loaded before running the script
+        document.addEventListener('DOMContentLoaded', function() {
+            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ======== MAIN REDIRECT LOGIC ======== //
-        (async () => {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const movieId = urlParams.get('id');
-                const action = urlParams.get('action');
-
-                console.log("Movie ID from URL:", movieId);
-                console.log("Action from URL:", action);
-
-                // Validate parameters
-                if (!movieId || !action) {
-                    throw new Error('Missing ID or action in URL');
-                }
-
-                // Fetch movie data
-                const { data: movie, error } = await supabase
-                    .from('movies')
-                    .select('*')
-                    .eq('id', movieId)
-                    .single();
-
-                console.log("Supabase Query Result:", movie);
-                console.log("Supabase Query Error:", error);
-
-                if (error) throw error;
-                if (!movie) throw new Error('Movie not found');
-
-                // Get redirect URL
-                let redirectUrl;
-                switch(action) {
-                    case 'telegram':
-                        redirectUrl = movie.telegram_url;
-                        break;
-                    case 'download':
-                        redirectUrl = movie.cloud_download_url;
-                        break;
-                    case 'stream':
-                        redirectUrl = movie.streamhg_url;
-                        break;
-                    default:
-                        throw new Error('Invalid action');
-                }
-
-                console.log("Redirect URL:", redirectUrl);
-
-                // Validate URL
-                if (!redirectUrl.startsWith('http')) {
-                    throw new Error('Invalid URL format in database');
-                }
-
-                // Perform redirect
-                window.location.href = redirectUrl;
-
-            } catch (error) {
-                showError(error.message);
-                console.error('Redirect Error:', error);
+            // ======== ERROR HANDLER ======== //
+            function showError(message) {
+                document.getElementById('loader').style.display = 'none';
+                const errorBox = document.getElementById('errorBox');
+                errorBox.style.display = 'block';
+                errorBox.innerHTML = `
+                    <h3 style="color: #ff4757">⚠️ Redirect Failed</h3>
+                    <p>${message}</p>
+                    <button onclick="window.history.back()"
+                            style="padding: 10px 20px;
+                                    margin-top: 1rem;
+                                    background: #ff4757;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 5px;
+                                    cursor: pointer;">
+                        Go Back
+                    </button>
+                `;
             }
-        })();
+
+            // ======== MAIN REDIRECT LOGIC ======== //
+            (async () => {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const movieId = urlParams.get('id');
+                    const action = urlParams.get('action');
+
+                    console.log("Movie ID from URL:", movieId);
+                    console.log("Action from URL:", action);
+
+                    // Validate parameters
+                    if (!movieId || !action) {
+                        throw new Error('Missing ID or action in URL');
+                    }
+
+                    // Fetch movie data
+                    const { data: movie, error } = await supabase
+                        .from('movies')
+                        .select('*')
+                        .eq('id', movieId)
+                        .single();
+
+                    console.log("Supabase Query Result:", movie);
+                    console.log("Supabase Query Error:", error);
+
+                    if (error) throw error;
+                    if (!movie) throw new Error('Movie not found');
+
+                    // Get redirect URL
+                    let redirectUrl;
+                    switch(action) {
+                        case 'telegram':
+                            redirectUrl = movie.telegram_url;
+                            break;
+                        case 'download':
+                            redirectUrl = movie.cloud_download_url;
+                            break;
+                        case 'stream':
+                            redirectUrl = movie.streamhg_url;
+                            break;
+                        default:
+                            throw new Error('Invalid action');
+                    }
+
+                    console.log("Redirect URL:", redirectUrl);
+
+                    // Validate URL
+                    if (!redirectUrl.startsWith('http')) {
+                        throw new Error('Invalid URL format in database');
+                    }
+
+                    // Perform redirect
+                    window.location.href = redirectUrl;
+
+                } catch (error) {
+                    showError(error.message);
+                    console.error('Redirect Error:', error);
+                }
+            })();
+        });
     </script>
 </body>
 </html>
