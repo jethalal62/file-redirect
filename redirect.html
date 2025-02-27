@@ -3,268 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MovieHub Pro - Watch & Download</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Redirecting...</title>
     <style>
-        :root {
-            --primary: #ff4757;
-            --secondary: #2ed573;
-            --accent: #1e90ff;
-            --dark: #2f3542;
-            --light: #ffffff;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #1a1a1a, #2d3436);
-            color: var(--light);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        /* Loading Animation */
         .loader {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid var(--primary);
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-        }
-
-        /* Movie Header */
-        .movie-header {
-            text-align: center;
-            margin-bottom: 3rem;
-            animation: fadeIn 1s ease;
-        }
-
-        .movie-poster {
-            width: 280px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-bottom: 1.5rem;
-            border: 3px solid var(--primary);
-            transition: transform 0.3s ease;
-        }
-
-        /* Options Grid */
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .option-card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            transition: transform 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .option-card:hover {
-            transform: translateY(-5px);
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .telegram-btn { background: #0088cc; color: white; }
-        .cloud-btn { background: var(--secondary); color: var(--dark); }
-        .stream-btn { background: var(--primary); color: white; }
-
-        /* Error Handling */
-        .error-container {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255,71,87,0.15);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--primary);
-            display: none;
-            max-width: 90%;
         }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 1rem; }
-            .movie-poster { width: 200px; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"></div>
-    
-    <div class="container">
-        <div class="movie-header">
-            <img src="https://via.placeholder.com/300x450?text=Movie+Poster" 
-                 class="movie-poster" 
-                 id="moviePoster">
-            
-            <div class="movie-info">
-                <h1 class="movie-title" id="movieTitle">Loading Movie...</h1>
-                <div class="movie-meta">
-                    <span id="movieGenre">• Genre •</span>
-                    <span id="movieYear">• Year •</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="options-grid">
-            <div class="option-card">
-                <i class="fab fa-telegram-plane fa-3x option-icon"></i>
-                <h3>Telegram Download</h3>
-                <p>Get instant access via Telegram bot</p>
-                <a class="btn telegram-btn" id="telegramBtn" target="_blank">
-                    <i class="fab fa-telegram-plane"></i>
-                    Get via Telegram
-                </a>
-            </div>
-
-            <div class="option-card">
-                <i class="fas fa-cloud-download-alt fa-3x option-icon"></i>
-                <h3>Direct Download</h3>
-                <p>High-speed cloud download</p>
-                <a class="btn cloud-btn" id="cloudBtn" target="_blank">
-                    <i class="fas fa-download"></i>
-                    Download Now
-                </a>
-            </div>
-
-            <div class="option-card">
-                <i class="fas fa-play-circle fa-3x option-icon"></i>
-                <h3>Instant Streaming</h3>
-                <p>Watch now in HD quality</p>
-                <a class="btn stream-btn" id="streamBtn" target="_blank">
-                    <i class="fas fa-play"></i>
-                    Watch Now
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="error-container" id="errorBox"></div>
+    <div class="loader"></div>
 
     <script>
-        // ========== SUPABASE CONFIGURATION ========== //
-        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co'; // Replace with your URL
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your key
+        // ======== SUPABASE INITIALIZATION ======== //
+        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ========== ERROR HANDLER ========== //
-        function showError(message) {
-            document.getElementById('loader').style.display = 'none';
-            const errorBox = document.getElementById('errorBox');
-            errorBox.style.display = 'block';
-            errorBox.innerHTML = `
-                <h3 style="color: var(--primary); margin-bottom: 1rem;">⚠️ Error</h3>
-                <p style="margin-bottom: 1.5rem;">${message}</p>
-                <button onclick="location.reload()" 
-                        style="padding: 10px 20px;
-                        background: var(--primary);
-                        color: white;
-                        border: none;
-                        border-radius: 25px;
-                        cursor: pointer;">
-                    Try Again
-                </button>
-            `;
-        }
-
-        // ========== MAIN LOGIC ========== //
-        async function initializeApp() {
+        // ======== REDIRECT LOGIC ======== //
+        (async () => {
             try {
-                // Get movie ID from URL
                 const urlParams = new URLSearchParams(window.location.search);
-                const movieId = urlParams.get('id') || 'default_movie';
+                const movieId = urlParams.get('id');
+                const action = urlParams.get('action');
+
+                if (!movieId || !action) {
+                    throw new Error('Missing URL parameters');
+                }
 
                 // Fetch movie data
                 const { data: movie, error } = await supabase
                     .from('movies')
                     .select('*')
                     .eq('id', movieId)
-                    .maybeSingle();
+                    .single();
 
-                if (error) throw error;
-                if (!movie) throw new Error('Movie not found in database');
+                if (error || !movie) throw new Error('Movie not found');
 
-                // Validate URLs
-                const requiredUrls = {
-                    telegram: movie.telegram_url,
-                    cloud: movie.cloud_download_url,
-                    stream: movie.streamhg_url
-                };
-
-                // Check URL validity
-                for (const [service, url] of Object.entries(requiredUrls)) {
-                    if (!url.startsWith('http')) {
-                        throw new Error(`Invalid ${service} URL format`);
-                    }
+                // Get redirect URL
+                let redirectUrl;
+                switch(action) {
+                    case 'telegram': redirectUrl = movie.telegram_url; break;
+                    case 'download': redirectUrl = movie.cloud_download_url; break;
+                    case 'stream': redirectUrl = movie.streamhg_url; break;
+                    default: throw new Error('Invalid action');
                 }
 
-                // Update UI
-                document.getElementById('movieTitle').textContent = movie.title;
-                document.getElementById('moviePoster').src = movie.poster_url;
-                document.getElementById('movieGenre').textContent = movie.genre;
-                document.getElementById('movieYear').textContent = movie.release_year;
+                if (!redirectUrl.startsWith('http')) {
+                    throw new Error('Invalid URL format');
+                }
 
-                // Set button actions
-                document.getElementById('telegramBtn').href = movie.telegram_url;
-                document.getElementById('cloudBtn').href = movie.cloud_download_url;
-                document.getElementById('streamBtn').href = movie.streamhg_url;
-
-                // Hide loader
-                document.getElementById('loader').style.display = 'none';
+                // Perform redirect
+                window.location.href = redirectUrl;
 
             } catch (error) {
-                showError(error.message);
-                console.error('Error:', error);
+                document.body.innerHTML = `
+                    <div style="text-align:center; padding:2rem;">
+                        <h2 style="color:red">⚠️ Error: ${error.message}</h2>
+                        <button onclick="history.back()" 
+                                style="padding:10px 20px; margin-top:1rem;">
+                            Go Back
+                        </button>
+                    </div>
+                `;
             }
-        }
-
-        // Start the application
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        })();
     </script>
 </body>
 </html>
