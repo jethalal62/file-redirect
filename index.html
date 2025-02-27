@@ -3,20 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choose Your Option</title>
+    <title>Get Your File Now!</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            background-color: #f0f0f0;
+        }
+        
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .buttons {
+            margin-top: 20px;
+        }
+        
+        .button {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        
+        .button:hover {
+            background-color: #3e8e41;
+        }
+        
+        #errorBox {
+            color: red;
+            font-size: 18px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Choose Your Option</h1>
-    <button data-choice="telegram">Telegram Download</button>
-    <button data-choice="cloud">Cloud Download</button>
-    <button data-choice="streaming">Instant Streaming</button>
-    <div id="errorBox" style="display: none;"></div>
+    <div class="container">
+        <div class="header">Choose Your Download Option</div>
+        <div class="buttons">
+            <button class="button" data-choice="telegram">Telegram Download</button>
+            <button class="button" data-choice="cloud">Cloud Download</button>
+            <button class="button" data-choice="streaming">Instant Streaming</button>
+        </div>
+        <div id="errorBox" style="display: none;"></div>
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -25,7 +69,7 @@
         
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        const buttons = document.querySelectorAll('button');
+        const buttons = document.querySelectorAll('.button');
         
         buttons.forEach(button => {
             button.addEventListener('click', async () => {
