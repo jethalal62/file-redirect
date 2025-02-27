@@ -1,85 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .error-message {
-            color: red;
-            font-size: 18px;
-        }
-    </style>
-</head>
-<body>
-    <div class="loader" id="loader"></div>
-    <div class="error-message" id="errorBox" style="display: none;"></div>
+<script>
+    // Initialize Supabase with your credentials
+    const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+    // Add timeout for redirect fallback
+    let redirectTimer;
 
-            // Initialize Supabase client
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    async function performRedirect() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
+            const action = urlParams.get('action');
 
-            async function redirectUser() {
-                try {
-                    // Fetch data from Supabase
-                    let { data, error } = await supabase
-                        .from('your-table')
-                        .select('*')
-                        .eq('some-column', 'some-value');
-
-                    if (error) throw error;
-
-                    // Debugging: Log the fetched data
-                    console.log('Fetched Data:', data);
-
-                    // Assuming you have a URL in the data
-                    if (data && data.length > 0) {
-                        const url = data[0].url; // Adjust this based on your data structure
-                        console.log('Redirecting to URL:', url); // Debugging: Log the URL
-                        window.location.href = url;
-                    } else {
-                        throw new Error('No data found');
-                    }
-                } catch (error) {
-                    showError(error.message);
-                }
+            if (!movieId || !action) {
+                throw new Error('Missing required parameters: id and action must be specified');
             }
 
-            function showError(message) {
-                const errorBox = document.getElementById('errorBox');
-                errorBox.textContent = message;
-                errorBox.style.display = 'block';
+            const { data: movie, error } = await supabase
+                .from('movies')
+                .select('*')
+                .eq('id', movieId)
+                .single();
+
+            if (error) throw error;
+            if (!movie) throw new Error('Requested content could not be found');
+
+            const validActions = {
+                telegram: movie.telegram_url,
+                download: movie.cloud_download_url,
+                stream: movie.streamhg_url
+            };
+
+            const targetUrl = validActions[action];
+            
+            if (!targetUrl) {
+                throw new Error('Invalid action type specified');
             }
 
-            // Start the redirection process
-            redirectUser();
-        });
-    </script>
-</body>
-</html>
+            if (!/^https?:\/\//i.test(targetUrl)) {
+                throw new Error(`The ${action} link is not properly formatted`);
+            }
+
+            // Set timeout fallback (5 seconds)
+            redirectTimer = setTimeout(() => {
+                showError('Redirect is taking too long. Please try again.');
+            }, 5000);
+
+            window.location.replace(targetUrl);
+
+        } catch (error) {
+            clearTimeout(redirectTimer);
+            showError(error.message);
+            console.error('Redirect Error:', error);
+        }
+    }
+
+    // Start the redirect process
+    performRedirect();
+</script>
