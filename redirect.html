@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .loader {
             border: 4px solid #f3f3f3;
@@ -17,6 +18,21 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 71, 87, 0.15);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #ff4757;
+            max-width: 90%;
+            display: none;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -24,23 +40,46 @@
     </style>
 </head>
 <body>
-    <div class="loader"></div>
+    <div class="loader" id="loader"></div>
+    <div class="error-message" id="errorBox"></div>
 
     <script>
         // ======== SUPABASE INITIALIZATION ======== //
-        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co'; // Replace with your URL
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your key
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ======== REDIRECT LOGIC ======== //
+        // ======== ERROR HANDLER ======== //
+        function showError(message) {
+            document.getElementById('loader').style.display = 'none';
+            const errorBox = document.getElementById('errorBox');
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = `
+                <h3 style="color: #ff4757">⚠️ Redirect Failed</h3>
+                <p>${message}</p>
+                <button onclick="window.history.back()" 
+                        style="padding: 10px 20px;
+                        margin-top: 1rem;
+                        background: #ff4757;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;">
+                    Go Back
+                </button>
+            `;
+        }
+
+        // ======== MAIN REDIRECT LOGIC ======== //
         (async () => {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const movieId = urlParams.get('id');
                 const action = urlParams.get('action');
 
+                // Validate parameters
                 if (!movieId || !action) {
-                    throw new Error('Missing URL parameters');
+                    throw new Error('Missing ID or action in URL');
                 }
 
                 // Fetch movie data
@@ -50,34 +89,36 @@
                     .eq('id', movieId)
                     .single();
 
-                if (error || !movie) throw new Error('Movie not found');
+                if (error) throw error;
+                if (!movie) throw new Error('Movie not found');
 
                 // Get redirect URL
                 let redirectUrl;
                 switch(action) {
-                    case 'telegram': redirectUrl = movie.telegram_url; break;
-                    case 'download': redirectUrl = movie.cloud_download_url; break;
-                    case 'stream': redirectUrl = movie.streamhg_url; break;
-                    default: throw new Error('Invalid action');
+                    case 'telegram':
+                        redirectUrl = movie.telegram_url;
+                        break;
+                    case 'download':
+                        redirectUrl = movie.cloud_download_url;
+                        break;
+                    case 'stream':
+                        redirectUrl = movie.streamhg_url;
+                        break;
+                    default:
+                        throw new Error('Invalid action');
                 }
 
+                // Validate URL
                 if (!redirectUrl.startsWith('http')) {
-                    throw new Error('Invalid URL format');
+                    throw new Error('Invalid URL format in database');
                 }
 
                 // Perform redirect
                 window.location.href = redirectUrl;
 
             } catch (error) {
-                document.body.innerHTML = `
-                    <div style="text-align:center; padding:2rem;">
-                        <h2 style="color:red">⚠️ Error: ${error.message}</h2>
-                        <button onclick="history.back()" 
-                                style="padding:10px 20px; margin-top:1rem;">
-                            Go Back
-                        </button>
-                    </div>
-                `;
+                showError(error.message);
+                console.error('Redirect Error:', error);
             }
         })();
     </script>
