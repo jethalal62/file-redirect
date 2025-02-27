@@ -5,37 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
     <style>
-        /* Your CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    <h1>Redirecting...</h1>
     <div class="loader" id="loader"></div>
-    <div class="error-message" id="errorBox"></div>
-
+    <div id="errorBox" style="display: none;"></div>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
-
-            // Initialize supabase first!
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-            // Your remaining JavaScript code here...
-            // (Including showError(), the async function, and console.log() statements)
-            function showError(message) {
-                // Your error handling code
-            }
-
-            (async () => {
-                try {
-                    // Your async code
-                    // Your console.log() statements
-                } catch (error) {
-                    // Your error handling
-                }
-            })();
-        });
+        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const choice = urlParams.get('choice');
+        
+        switch (choice) {
+            case 'telegram':
+                window.location.href = 'https://example.com/telegram-download';
+                break;
+            case 'cloud':
+                window.location.href = 'https://example.com/cloud-download';
+                break;
+            case 'streaming':
+                window.location.href = 'https://example.com/instant-streaming';
+                break;
+            default:
+                showError('Invalid choice');
+        }
+        
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.innerText = message;
+            errorBox.style.display = 'block';
+        }
     </script>
 </body>
 </html>
