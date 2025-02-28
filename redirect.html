@@ -1,77 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Movie Options</title>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <style>
-        .btn {
-            display: block;
-            margin: 10px;
-            padding: 15px;
-            background: #0088cc;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Redirect Page</title>
 </head>
 <body>
-    <!-- Specific button for Telegram -->
-    <a id="telegramButton" class="btn">Telegram Download</a>
+  <h1>Loading...</h1>
+  <script type="module">
+    // Import the Supabase client
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    <script type="module">
-        // Replace with your credentials
-        const SUPABASE_URL = "https://itrvfwwxjoedvrmhkkvi.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s";
-        
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Initialize Supabase client with your credentials
+    const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your actual API key
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // Get URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const movieId = urlParams.get('id');
-        console.log('Current Movie ID:', movieId);
+    // Extract the 'id' parameter from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get('id');
 
-        async function updateTelegramLink() {
-            try {
-                // Fetch specific columns only
-                const { data, error } = await supabase
-                    .from('movies')
-                    .select('telegram_url,updated_at')
-                    .eq('id', movieId)
-                    .single();
+    // Function to fetch movie data from Supabase
+    async function fetchMovieData() {
+      try {
+        const { data, error } = await supabase
+          .from('movies') // Ensure this matches your table name
+          .select('*')
+          .eq('id', movieId)
+          .single();
 
-                if (error || !data?.telegram_url) {
-                    throw new Error('Telegram link not found');
-                }
+        if (error) throw error;
 
-                // Update button with cache-buster
-                const telegramBtn = document.getElementById('telegramButton');
-                telegramBtn.href = `${data.telegram_url}?t=${Date.now()}`;
-                console.log('Telegram URL:', telegramBtn.href);
-
-            } catch (err) {
-                console.error('Error:', err);
-                document.body.innerHTML = `<h2 style="color:red">${err.message}</h2>`;
-            }
+        if (data) {
+          // Redirect to the stream URL if available
+          if (data.streamhg_url) {
+            window.location.href = data.streamhg_url;
+          } else {
+            document.body.innerHTML = '<h1>Stream URL not found for this movie.</h1>';
+          }
+        } else {
+          document.body.innerHTML = '<h1>Movie not found.</h1>';
         }
+      } catch (error) {
+        console.error('Error fetching movie data:', error);
+        document.body.innerHTML = '<h1>An error occurred while fetching movie data.</h1>';
+      }
+    }
 
-        // First load
-        updateTelegramLink();
-
-        // Realtime updates for Telegram URL
-        const channel = supabase.channel('telegram-updates')
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'movies',
-                filter: `id=eq.${movieId}`,
-            }, (payload) => {
-                console.log('Telegram URL Updated:', payload.new.telegram_url);
-                document.getElementById('telegramButton').href = 
-                    `${payload.new.telegram_url}?t=${Date.now()}`;
-            })
-            .subscribe();
-    </script>
+    // Fetch movie data on page load
+    fetchMovieData();
+  </script>
 </body>
 </html>
