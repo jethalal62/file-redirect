@@ -1,40 +1,55 @@
-<script type="module">
-  // Initialize Supabase
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-  const supabase = createClient("https://itrvfwwxjoedvrmhkkvi.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+</head>
+<body>
+    <h1>Redirecting...</h1>
+    <p>If you are not redirected, <a id="manualLink" href="#">click here</a>.</p>
 
-  // Get the movie ID from the URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const movieId = urlParams.get('id');
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  // Function to fetch movie data
-  async function fetchMovieData() {
-    let { data, error } = await supabase
-      .from('movies')  // Replace with your table name
-      .select('*')
-      .eq('id', movieId)
-      .single();  // Fetch a single row
+        // Initialize Supabase
+        const supabaseUrl = "https://itrvfwwxjoedvrmhkkvi.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s";
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-    if (error || !data) {
-      console.error("Movie not found:", error);
-      document.body.innerHTML = "<h1>Movie not found</h1>";
-      return;
-    }
+        // Get movie ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const movieId = urlParams.get('id');
 
-    // Update the page content with the new movie data
-    document.getElementById('streamButton').href = data.streamhg_url;
-    document.getElementById('downloadButton').href = data.cloud_download_url;
-    document.getElementById('telegramButton').href = data.telegram_url;
-  }
+        if (!movieId) {
+            document.body.innerHTML = "<h1>Invalid Request</h1><p>No movie ID provided.</p>";
+        } else {
+            fetchMovieData(movieId);
+        }
 
-  // Fetch movie data on page load
-  fetchMovieData();
+        async function fetchMovieData(movieId) {
+            try {
+                let { data, error } = await supabase
+                    .from('movies')  // Make sure your Supabase table is named correctly
+                    .select('*')
+                    .eq('id', movieId)
+                    .single();
 
-  // Enable Realtime updates
-  supabase.channel('movies_realtime')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'movies' }, (payload) => {
-      console.log("Database updated:", payload);
-      fetchMovieData();  // Refresh data when changes occur
-    })
-    .subscribe();
-</script>
+                if (error || !data) {
+                    console.error("Error fetching data:", error);
+                    document.body.innerHTML = `<h1>Movie Not Found</h1><p>No data found for ID: ${movieId}</p>`;
+                    return;
+                }
+
+                // Redirect to stream URL
+                window.location.href = data.streamhg_url;
+                document.getElementById('manualLink').href = data.streamhg_url;
+
+            } catch (err) {
+                console.error("Unexpected Error:", err);
+                document.body.innerHTML = "<h1>Something went wrong</h1>";
+            }
+        }
+    </script>
+</body>
+</html>
