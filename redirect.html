@@ -6,48 +6,59 @@
 </head>
 <body>
   <h1>Loading...</h1>
+
+  <!-- Buttons for actions -->
+  <a id="streamButton" href="#" style="display:none;">Watch Online</a>
+  <a id="downloadButton" href="#" style="display:none;">Cloud Download</a>
+  <a id="telegramButton" href="#" style="display:none;">Telegram Download</a>
+
   <script type="module">
-    // Import the Supabase client
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Initialize Supabase client with your credentials
     const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your actual API key
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';  // Replace with actual key
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Extract the 'id' parameter from the URL
     const urlParams = new URLSearchParams(window.location.search);
     const movieId = urlParams.get('id');
 
-    // Function to fetch movie data from Supabase
     async function fetchMovieData() {
       try {
         const { data, error } = await supabase
-          .from('movies') // Ensure this matches your table name
-          .select('*')
+          .from('movies')  // Table name
+          .select('streamhg_url, cloud_download_url, telegram_url')
           .eq('id', movieId)
           .single();
 
-        if (error) throw error;
-
-        if (data) {
-          // Redirect to the stream URL if available
-          if (data.streamhg_url) {
-            window.location.href = data.streamhg_url;
-          } else {
-            document.body.innerHTML = '<h1>Stream URL not found for this movie.</h1>';
-          }
-        } else {
+        if (error || !data) {
           document.body.innerHTML = '<h1>Movie not found.</h1>';
+          return;
         }
-      } catch (error) {
-        console.error('Error fetching movie data:', error);
-        document.body.innerHTML = '<h1>An error occurred while fetching movie data.</h1>';
+
+        // Set correct links for buttons
+        document.getElementById('streamButton').href = data.streamhg_url;
+        document.getElementById('downloadButton').href = data.cloud_download_url;
+        document.getElementById('telegramButton').href = data.telegram_url;
+
+        // Make buttons visible
+        document.getElementById('streamButton').style.display = 'block';
+        document.getElementById('downloadButton').style.display = 'block';
+        document.getElementById('telegramButton').style.display = 'block';
+
+        document.body.innerHTML = '<h1>Select an option below:</h1>';  // Update page content
+
+      } catch (err) {
+        console.error('Error fetching movie:', err);
+        document.body.innerHTML = '<h1>Error fetching movie data.</h1>';
       }
     }
 
-    // Fetch movie data on page load
     fetchMovieData();
+
+    // Listen for changes in the database
+    supabase.channel('movies_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'movies' }, fetchMovieData)
+      .subscribe();
   </script>
 </body>
 </html>
