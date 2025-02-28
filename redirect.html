@@ -2,54 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
+    <title>Movie Options</title>
+    <style>
+        /* Basic styling for buttons */
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 2rem;
+        }
+        .btn {
+            padding: 15px 30px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>Redirecting...</h1>
-    <p>If you are not redirected, <a id="manualLink" href="#">click here</a>.</p>
+    <div class="btn-container">
+        <a id="streamButton" class="btn">Stream Now</a>
+        <a id="downloadButton" class="btn">Cloud Download</a>
+        <a id="telegramButton" class="btn">Telegram Download</a>
+    </div>
 
     <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+        // Replace these with your actual Supabase credentials
+        const SUPABASE_URL = "https://itrvfwwxjoedvrmhkkvi.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s";
 
-        // Initialize Supabase
-        const supabaseUrl = "https://itrvfwwxjoedvrmhkkvi.supabase.co";
-        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s";
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // Get movie ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const movieId = urlParams.get('id');
 
-        if (!movieId) {
-            document.body.innerHTML = "<h1>Invalid Request</h1><p>No movie ID provided.</p>";
-        } else {
-            fetchMovieData(movieId);
-        }
-
-        async function fetchMovieData(movieId) {
+        async function fetchMovieData() {
             try {
-                let { data, error } = await supabase
-                    .from('movies')  // Make sure your Supabase table is named correctly
+                const { data, error } = await supabase
+                    .from('movies')
                     .select('*')
                     .eq('id', movieId)
                     .single();
 
                 if (error || !data) {
-                    console.error("Error fetching data:", error);
-                    document.body.innerHTML = `<h1>Movie Not Found</h1><p>No data found for ID: ${movieId}</p>`;
+                    document.body.innerHTML = "<h1>Movie not found</h1>";
                     return;
                 }
 
-                // Redirect to stream URL
-                window.location.href = data.streamhg_url;
-                document.getElementById('manualLink').href = data.streamhg_url;
+                // Update button links
+                document.getElementById('streamButton').href = data.streamhg_url || "#";
+                document.getElementById('downloadButton').href = data.cloud_download_url || "#";
+                document.getElementById('telegramButton').href = data.telegram_url || "#";
 
+                // Force link refresh (cache busting)
+                console.log("Links updated for movie ID:", movieId);
+                
             } catch (err) {
-                console.error("Unexpected Error:", err);
-                document.body.innerHTML = "<h1>Something went wrong</h1>";
+                console.error("Error:", err);
+                document.body.innerHTML = "<h1>Error loading movie</h1>";
             }
         }
+
+        // Initial fetch
+        fetchMovieData();
+
+        // Realtime updates
+        supabase.channel('movies_realtime')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'movies',
+                filter: `id=eq.${movieId}`
+            }, (payload) => {
+                console.log('Realtime update:', payload);
+                fetchMovieData();
+            })
+            .subscribe();
+
     </script>
 </body>
 </html>
