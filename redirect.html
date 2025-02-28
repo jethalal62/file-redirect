@@ -2,16 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Redirect Page</title>
-</head>
-<body>
-  <h1>Loading...</h1>
-
-  <!-- Buttons for actions -->
-  <a id="streamButton" href="#" style="display:none;">Watch Online</a>
-  <a id="downloadButton" href="#" style="display:none;">Cloud Download</a>
-  <a id="telegramButton" href="#" style="display:none;">Telegram Download</a>
-
+  <title>Redirecting...</title>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -22,43 +13,30 @@
     const urlParams = new URLSearchParams(window.location.search);
     const movieId = urlParams.get('id');
 
-    async function fetchMovieData() {
+    async function fetchAndRedirect() {
       try {
         const { data, error } = await supabase
           .from('movies')  // Table name
-          .select('streamhg_url, cloud_download_url, telegram_url')
+          .select('streamhg_url')  // Fetch only stream link
           .eq('id', movieId)
           .single();
 
         if (error || !data) {
-          document.body.innerHTML = '<h1>Movie not found.</h1>';
+          console.error("Movie not found:", error);
+          window.location.href = "index.html";  // Redirect to homepage if movie not found
           return;
         }
 
-        // Set correct links for buttons
-        document.getElementById('streamButton').href = data.streamhg_url;
-        document.getElementById('downloadButton').href = data.cloud_download_url;
-        document.getElementById('telegramButton').href = data.telegram_url;
-
-        // Make buttons visible
-        document.getElementById('streamButton').style.display = 'block';
-        document.getElementById('downloadButton').style.display = 'block';
-        document.getElementById('telegramButton').style.display = 'block';
-
-        document.body.innerHTML = '<h1>Select an option below:</h1>';  // Update page content
-
+        window.location.href = data.streamhg_url;  // Instantly redirect
       } catch (err) {
-        console.error('Error fetching movie:', err);
-        document.body.innerHTML = '<h1>Error fetching movie data.</h1>';
+        console.error("Error fetching movie:", err);
+        window.location.href = "index.html";  // Redirect to homepage on error
       }
     }
 
-    fetchMovieData();
-
-    // Listen for changes in the database
-    supabase.channel('movies_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'movies' }, fetchMovieData)
-      .subscribe();
+    fetchAndRedirect();
   </script>
+</head>
+<body>
 </body>
 </html>
