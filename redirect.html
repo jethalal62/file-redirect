@@ -1,170 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirect System</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .error-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 71, 87, 0.15);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid #ff4757;
-            display: none;
-            max-width: 90%;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecting...</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .error-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 71, 87, 0.15);
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
+      border: 1px solid #ff4757;
+      display: none;
+      max-width: 90%;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-    <div class="loader" id="loader"></div>
-    <div class="error-box" id="errorBox"></div>
+  <div class="loader" id="loader"></div>
+  <div class="error-box" id="errorBox"></div>
 
-    <script>
-        // ======== SUPABASE CONFIGURATION ======== //
-        const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
-        const supabase = window.supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY,
-            {
-                headers: {
-                    'Accept': 'application/json',
-                    'apikey': SUPABASE_KEY
-                }
-            }
-        );
+  <script>
+    // ======== SUPABASE CONFIGURATION ======== //
+    // Replace these with your actual Supabase project details if necessary.
+    const SUPABASE_URL = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      headers: {
+        'Accept': 'application/json',
+        'apikey': SUPABASE_KEY
+      }
+    });
 
-        // ======== ERROR HANDLER ======== //
-        function showError(message, errorCode = '') {
-            document.getElementById('loader').style.display = 'none';
-            const errorBox = document.getElementById('errorBox');
-            errorBox.style.display = 'block';
-            errorBox.innerHTML = `
-                <h3 style="color: #ff4757">⚠️ Redirect Failed</h3>
-                <p>${message}</p>
-                ${errorCode ? `<small>Error code: ${errorCode}</small>` : ''}
-                <div style="margin-top: 1rem;">
-                    <button onclick="window.history.back()" 
-                            style="padding: 10px 20px;
-                            background: #ff4757;
-                            color: white;
-                            border: none;
-                            border-radius: 5px;
-                            cursor: pointer;">
-                        Go Back
-                    </button>
-                    <button onclick="location.reload()" 
-                            style="margin-left: 1rem;
-                            padding: 10px 20px;
-                            background: #1e90ff;
-                            color: white;
-                            border: none;
-                            border-radius: 5px;
-                            cursor: pointer;">
-                        Try Again
-                    </button>
-                </div>
-            `;
+    // ======== ERROR HANDLER ======== //
+    function showError(message, errorCode = '') {
+      document.getElementById('loader').style.display = 'none';
+      const errorBox = document.getElementById('errorBox');
+      errorBox.style.display = 'block';
+      errorBox.innerHTML = `
+        <h3 style="color: #ff4757">⚠️ Redirect Failed</h3>
+        <p>${message}</p>
+        ${errorCode ? `<small>Error code: ${errorCode}</small>` : ''}
+        <div style="margin-top: 1rem;">
+          <button onclick="window.history.back()" 
+                  style="padding: 10px 20px;
+                  background: #ff4757;
+                  color: white;
+                  border: none;
+                  border-radius: 5px;
+                  cursor: pointer;">
+              Go Back
+          </button>
+          <button onclick="location.reload()" 
+                  style="margin-left: 1rem;
+                  padding: 10px 20px;
+                  background: #1e90ff;
+                  color: white;
+                  border: none;
+                  border-radius: 5px;
+                  cursor: pointer;">
+              Try Again
+          </button>
+        </div>
+      `;
+    }
+
+    // ======== MAIN REDIRECT LOGIC ======== //
+    (async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      let redirectTimer;
+
+      try {
+        // Retrieve query parameters
+        const movieId = urlParams.get('id');      // e.g., "skyforce_1080"
+        const action = urlParams.get('action');     // e.g., "stream", "download", or "telegram"
+        console.log('Redirect request:', { movieId, action });
+
+        // Validate required parameters
+        if (!movieId || !action) {
+          throw new Error('Missing required parameters: id and action');
         }
 
-        // ======== MAIN REDIRECT LOGIC ======== //
-        (async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            let redirectTimer;
+        // Fetch the movie data from Supabase
+        const { data: movie, error } = await supabase
+          .from('movies')
+          .select('*')
+          .eq('id', movieId)
+          .single();
+        if (error) throw error;
+        if (!movie) throw new Error('Movie not found');
 
-            try {
-                // Get and validate parameters
-                const movieId = urlParams.get('id');
-                const action = urlParams.get('action');
-                
-                console.log('Redirect request:', { movieId, action });
+        // Define action URLs from movie data
+        const actionUrls = {
+          telegram: movie.telegram_url,      // For Telegram file link
+          download: movie.cloud_download_url,  // For direct cloud download link
+          stream: movie.streamhg_url           // For instant streaming URL
+        };
 
-                if (!movieId || !action) {
-                    throw new Error('Missing required parameters: id and action');
-                }
+        const targetUrl = actionUrls[action];
+        if (!targetUrl) throw new Error('Invalid action specified');
+        if (!/^https?:\/\//i.test(targetUrl)) {
+          throw new Error(`Invalid URL format for action: ${action}`);
+        }
 
-                // Fetch movie data
-                const { data: movie, error } = await supabase
-                    .from('movies')
-                    .select('*')
-                    .eq('id', movieId)
-                    .single();
+        // Set a timeout in case redirect takes too long
+        redirectTimer = setTimeout(() => {
+          showError('Redirect taking too long. Please try again.');
+        }, 5000);
 
-                if (error) throw error;
-                if (!movie) throw new Error('Movie not found');
+        // Clear the timeout if the page is unloading
+        window.addEventListener('beforeunload', () => {
+          clearTimeout(redirectTimer);
+        });
 
-                // Validate action URL
-                const actionUrls = {
-                    telegram: movie.telegram_url,
-                    download: movie.cloud_download_url,
-                    stream: movie.streamhg_url
-                };
+        // Perform the redirect
+        window.location.replace(targetUrl);
 
-                const targetUrl = actionUrls[action];
-                if (!targetUrl) throw new Error('Invalid action specified');
-                if (!/^https?:\/\//i.test(targetUrl)) {
-                    throw new Error(`Invalid URL format for ${action}`);
-                }
-
-                // Set redirect timeout
-                redirectTimer = setTimeout(() => {
-                    showError('Redirect taking too long. Please retry.');
-                }, 5000);
-
-                // Cleanup before redirect
-                window.addEventListener('beforeunload', () => {
-                    clearTimeout(redirectTimer);
-                });
-
-                // Perform redirect
-                window.location.replace(targetUrl);
-
-            } catch (error) {
-                clearTimeout(redirectTimer);
-                
-                // Handle specific errors
-                let userMessage = error.message;
-                const movieId = urlParams.get('id');
-
-                if (error.code === 'PGRST116') {
-                    userMessage = `Movie ID not found: "${movieId}"`;
-                } else if (error.message.includes('406')) {
-                    userMessage = 'Server configuration issue detected';
-                }
-
-                showError(userMessage, error.code);
-                console.error('Error Details:', {
-                    error,
-                    parameters: {
-                        id: movieId,
-                        action: urlParams.get('action')
-                    },
-                    supabaseRequest: `${SUPABASE_URL}/rest/v1/movies?id=eq.${movieId}`
-                });
-            }
-        })();
-    </script>
+      } catch (error) {
+        clearTimeout(redirectTimer);
+        let userMessage = error.message;
+        const movieId = urlParams.get('id');
+        if (error.code === 'PGRST116') {
+          userMessage = `Movie ID not found: "${movieId}"`;
+        } else if (error.message.includes('406')) {
+          userMessage = 'Server configuration issue detected';
+        }
+        showError(userMessage, error.code);
+        console.error('Error Details:', {
+          error,
+          parameters: {
+            id: movieId,
+            action: urlParams.get('action')
+          },
+          supabaseRequest: `${SUPABASE_URL}/rest/v1/movies?id=eq.${movieId}`
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
