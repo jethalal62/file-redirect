@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"> <!-- Disable caching -->
     <title>Movie Redirect</title>
 </head>
 <body>
-    <!-- Only streaming button remains -->
-    <a id="streamButton" style="display: block; padding: 20px; background: blue; color: white;">
-        Watch Now
-    </a>
+    <a id="streamButton">Loading...</a>
 
     <script type="module">
         // Replace with your Supabase credentials
@@ -21,29 +19,52 @@
         // Get movie ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const movieId = urlParams.get('id');
+        console.log("Current Movie ID:", movieId); // Debugging
 
-        async function loadStreamLink() {
+        async function loadMovie() {
             try {
+                // Force fresh data with cache-busting
                 const { data, error } = await supabase
                     .from('movies')
-                    .select('streamhg_url')
+                    .select('*')
                     .eq('id', movieId)
-                    .single();
+                    .single()
+                    .then(response => {
+                        console.log("Supabase Response:", response); // Debug
+                        return response;
+                    });
 
-                if (!error && data) {
-                    // Redirect automatically
-                    window.location.href = data.streamhg_url;
+                if (data?.streamhg_url) {
+                    document.getElementById('streamButton').href = data.streamhg_url + `?t=${Date.now()}`; // Cache-bust
+                    console.log("Updated URL:", data.streamhg_url); // Debug
                 } else {
-                    document.body.innerHTML = "<h1>Movie not found</h1>";
+                    document.body.innerHTML = `<h1>Movie ${movieId} not found</h1>`;
                 }
             } catch (err) {
                 console.error("Error:", err);
-                document.body.innerHTML = "<h1>Error loading movie</h1>";
             }
         }
 
-        // Auto-redirect when page loads
-        loadStreamLink();
+        // Initial load
+        loadMovie();
+
+        // Realtime updates (filtered to current movie)
+        const channel = supabase.channel('movie-updates')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'movies',
+                filter: `id=eq.${movieId}` // Critical fix: only listen for THIS movie
+            }, () => {
+                console.log("Realtime update detected!");
+                loadMovie();
+            })
+            .subscribe();
+
+        // Cleanup on page close
+        window.addEventListener('beforeunload', () => {
+            supabase.removeChannel(channel);
+        });
     </script>
 </body>
 </html>
