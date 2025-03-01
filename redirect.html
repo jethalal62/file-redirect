@@ -2,92 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Movie Redirect</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
-      background-color: #f0f0f0;
-    }
-    .button {
-      display: block;
-      margin: 15px auto;
-      padding: 15px 25px;
-      background: #3498db;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      width: 80%;
-      max-width: 300px;
-      font-size: 16px;
-    }
-    .error {
-      color: red;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-  <h1>Choose an Option</h1>
-  <a id="streamButton" class="button" href="#">Watch Online</a>
-  <a id="downloadButton" class="button" href="#">Download File</a>
-  <a id="telegramButton" class="button" href="#">Get via Telegram</a>
-  
-  <p id="errorMessage" class="error"></p>
-
+  <title>Redirecting...</title>
   <script type="module">
-    // Initialize Supabase client with your project details.
-    const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your actual anon key.
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // Initialize Supabase with your credentials
+    const supabaseUrl = "https://itrvfwwxjoedvrmhkkvi.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s"; // Replace with your actual anon key
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Read the movie ID from the query parameters.
+    // Read URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const movieId = urlParams.get('id');
-    console.log("Movie ID from URL:", movieId);
+    const action = urlParams.get('action');
 
-    if (!movieId) {
-      document.getElementById('errorMessage').textContent = "Error: No movie ID provided!";
+    // If parameters are missing, show an error
+    if (!movieId || !action) {
+      document.body.innerHTML = "<h1>Error: Missing required parameters.</h1>";
     } else {
-      // Fetch movie data from Supabase for the given movie ID.
-      async function fetchMovieData() {
+      async function fetchAndRedirect() {
         try {
+          // Fetch the movie row from Supabase for the given movieId
           const { data, error } = await supabase
-            .from('movies') // Make sure your table name is correct.
+            .from('movies')
             .select('streamhg_url, cloud_download_url, telegram_url')
             .eq('id', movieId)
             .single();
 
-          console.log("Fetched data:", data, "Error:", error);
-
           if (error || !data) {
-            document.getElementById('errorMessage').textContent = "Error: Movie not found!";
+            document.body.innerHTML = `<h1>Error: Movie not found for ID "${movieId}".</h1>`;
             return;
           }
 
-          // Update each button's href with the latest links.
-          document.getElementById('streamButton').href = data.streamhg_url;
-          document.getElementById('downloadButton').href = data.cloud_download_url;
-          document.getElementById('telegramButton').href = data.telegram_url;
+          // Map actions to the correct column
+          let targetUrl;
+          if (action === "stream") {
+            targetUrl = data.streamhg_url;
+          } else if (action === "download") {
+            targetUrl = data.cloud_download_url;
+          } else if (action === "telegram") {
+            targetUrl = data.telegram_url;
+          } else {
+            document.body.innerHTML = "<h1>Error: Invalid action parameter.</h1>";
+            return;
+          }
+
+          if (!targetUrl) {
+            document.body.innerHTML = "<h1>Error: No URL available for this action.</h1>";
+            return;
+          }
+
+          // Append a timestamp to avoid caching and redirect immediately
+          window.location.replace(targetUrl + "?t=" + new Date().getTime());
         } catch (err) {
-          console.error("Error fetching movie data:", err);
-          document.getElementById('errorMessage').textContent = "Unexpected error fetching movie data.";
+          document.body.innerHTML = `<h1>Error: ${err.message}</h1>`;
+          console.error("Redirect error:", err);
         }
       }
-      fetchMovieData();
+      fetchAndRedirect();
     }
-
-    // Optionally, if you want realtime updates, enable realtime:
-    // supabase.channel('movies_realtime')
-    //   .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'movies' }, (payload) => {
-    //     console.log("Database updated:", payload);
-    //     // If the update affects the current movie, refresh the data.
-    //     if (payload.new.id === movieId) {
-    //       fetchMovieData();
-    //     }
-    //   })
-    //   .subscribe();
   </script>
+</head>
+<body>
+  <!-- The page will remain blank as it redirects automatically -->
 </body>
 </html>
