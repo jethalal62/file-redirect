@@ -2,41 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Redirecting...</title>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s';  // Replace with actual key
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const movieId = urlParams.get('id');
-
-    async function fetchAndRedirect() {
-      try {
-        const { data, error } = await supabase
-          .from('movies')  // Table name
-          .select('streamhg_url')  // Fetch only stream link
-          .eq('id', movieId)
-          .single();
-
-        if (error || !data) {
-          console.error("Movie not found:", error);
-          window.location.href = "index.html";  // Redirect to homepage if movie not found
-          return;
-        }
-
-        window.location.href = data.streamhg_url;  // Instantly redirect
-      } catch (err) {
-        console.error("Error fetching movie:", err);
-        window.location.href = "index.html";  // Redirect to homepage on error
-      }
+  <title>Movie Redirect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      background-color: #f0f0f0;
     }
-
-    fetchAndRedirect();
-  </script>
+    .button {
+      display: block;
+      margin: 15px auto;
+      padding: 15px 25px;
+      background: #3498db;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      width: 80%;
+      max-width: 300px;
+      font-size: 16px;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <h1>Choose an Option</h1>
+  <a id="streamButton" class="button" href="#">Watch Online</a>
+  <a id="downloadButton" class="button" href="#">Download File</a>
+  <a id="telegramButton" class="button" href="#">Get via Telegram</a>
+  
+  <p id="errorMessage" class="error"></p>
+
+  <script type="module">
+    // Initialize Supabase client with your project details.
+    const supabaseUrl = 'https://itrvfwwxjoedvrmhkkvi.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s'; // Replace with your actual anon key.
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Read the movie ID from the query parameters.
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get('id');
+    console.log("Movie ID from URL:", movieId);
+
+    if (!movieId) {
+      document.getElementById('errorMessage').textContent = "Error: No movie ID provided!";
+    } else {
+      // Fetch movie data from Supabase for the given movie ID.
+      async function fetchMovieData() {
+        try {
+          const { data, error } = await supabase
+            .from('movies') // Make sure your table name is correct.
+            .select('streamhg_url, cloud_download_url, telegram_url')
+            .eq('id', movieId)
+            .single();
+
+          console.log("Fetched data:", data, "Error:", error);
+
+          if (error || !data) {
+            document.getElementById('errorMessage').textContent = "Error: Movie not found!";
+            return;
+          }
+
+          // Update each button's href with the latest links.
+          document.getElementById('streamButton').href = data.streamhg_url;
+          document.getElementById('downloadButton').href = data.cloud_download_url;
+          document.getElementById('telegramButton').href = data.telegram_url;
+        } catch (err) {
+          console.error("Error fetching movie data:", err);
+          document.getElementById('errorMessage').textContent = "Unexpected error fetching movie data.";
+        }
+      }
+      fetchMovieData();
+    }
+
+    // Optionally, if you want realtime updates, enable realtime:
+    // supabase.channel('movies_realtime')
+    //   .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'movies' }, (payload) => {
+    //     console.log("Database updated:", payload);
+    //     // If the update affects the current movie, refresh the data.
+    //     if (payload.new.id === movieId) {
+    //       fetchMovieData();
+    //     }
+    //   })
+    //   .subscribe();
+  </script>
 </body>
 </html>
