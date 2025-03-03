@@ -6,16 +6,13 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // Initialize Supabase
     const supabaseUrl = "https://itrvfwwxjoedvrmhkkvi.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s"; // Replace with your actual anon key
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0cnZmd3d4am9lZHZybWhra3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1NzIwMTYsImV4cCI6MjA1NjE0ODAxNn0.-XZZTiEBhy75cIWo_IpcYFWET7ckSfu0b6l4-ev0S0s";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get movie ID and action from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const movieId = urlParams.get('id');  // e.g., "skyforce_1080"
-    const action = urlParams.get('action'); // e.g., "download", "stream", or "telegram"
-    console.log("Movie ID from URL:", movieId, "Action:", action);
+    const movieId = urlParams.get('id');
+    const action = urlParams.get('action');
 
     if (!movieId || !action) {
       document.body.innerHTML = "<h1>Error: Missing required parameters.</h1>";
@@ -26,12 +23,13 @@
     async function fetchAndRedirect() {
       try {
         const timestamp = new Date().getTime();
-        // Fetch movie details from Supabase
+        // Fetch with cache-busting to get fresh data
         const { data, error } = await supabase
           .from('movies')
           .select('streamhg_url, cloud_download_url, telegram_url')
           .eq('id', movieId)
-          .single();
+          .single()
+          .options({ fetch: { cache: 'no-store' } }); // Bypass cache
 
         if (error || !data) {
           document.body.innerHTML = `<h1>Error: Movie not found for ID "${movieId}".</h1>`;
@@ -39,19 +37,20 @@
           return;
         }
 
-        console.log("Fetched data from Supabase:", data);
-
-        // Map the action parameter to the correct URL column
         let targetUrl;
-        if (action === "stream") {
-          targetUrl = data.streamhg_url;
-        } else if (action === "download") {
-          targetUrl = data.cloud_download_url;
-        } else if (action === "telegram") {
-          targetUrl = data.telegram_url;
-        } else {
-          document.body.innerHTML = "<h1>Error: Invalid action parameter.</h1>";
-          return;
+        switch (action) {
+          case "stream":
+            targetUrl = data.streamhg_url;
+            break;
+          case "download":
+            targetUrl = data.cloud_download_url;
+            break;
+          case "telegram":
+            targetUrl = data.telegram_url;
+            break;
+          default:
+            document.body.innerHTML = "<h1>Error: Invalid action parameter.</h1>";
+            return;
         }
 
         if (!targetUrl) {
@@ -59,7 +58,6 @@
           return;
         }
 
-        // Redirect with cache buster to ensure fresh data
         window.location.replace(targetUrl + "?t=" + timestamp);
       } catch (err) {
         console.error("Unexpected error:", err);
