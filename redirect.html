@@ -23,13 +23,12 @@
     async function fetchAndRedirect() {
       try {
         const timestamp = new Date().getTime();
-        // Fetch with cache-busting to get fresh data
+        // Fetch with cache-busting using random parameter
         const { data, error } = await supabase
           .from('movies')
           .select('streamhg_url, cloud_download_url, telegram_url')
           .eq('id', movieId)
-          .single()
-          .options({ fetch: { cache: 'no-store' } }); // Bypass cache
+          .single();
 
         if (error || !data) {
           document.body.innerHTML = `<h1>Error: Movie not found for ID "${movieId}".</h1>`;
@@ -58,6 +57,7 @@
           return;
         }
 
+        // Force fresh redirect with cache-buster
         window.location.replace(targetUrl + "?t=" + timestamp);
       } catch (err) {
         console.error("Unexpected error:", err);
